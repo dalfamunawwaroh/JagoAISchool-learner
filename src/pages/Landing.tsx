@@ -804,7 +804,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 className={`w-full p-5 rounded-2xl text-left transition-all border block ${
                   selectedFeatureTab === 'sandbox' 
                     ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-gray-50'
+                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
                 }`}
               >
                 <div className="flex items-start gap-4">
@@ -832,7 +832,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 className={`w-full p-5 rounded-2xl text-left transition-all border block ${
                   selectedFeatureTab === 'consult' 
                     ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-gray-50'
+                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
                 }`}
               >
                 <div className="flex items-start gap-4">
@@ -860,7 +860,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 className={`w-full p-5 rounded-2xl text-left transition-all border block ${
                   selectedFeatureTab === 'lms' 
                     ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-gray-50'
+                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
                 }`}
               >
                 <div className="flex items-start gap-4">
@@ -888,7 +888,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 className={`w-full p-5 rounded-2xl text-left transition-all border block ${
                   selectedFeatureTab === 'forums' 
                     ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-gray-50'
+                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
                 }`}
               >
                 <div className="flex items-start gap-4">

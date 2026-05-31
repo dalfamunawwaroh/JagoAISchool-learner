@@ -21,11 +21,11 @@ import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
 import { ComingSoon } from './pages/ComingSoon';
 import { FloatingAIChat } from './components/chat/FloatingAIChat';
+import { Notifications } from './pages/Notifications';
 
-// --- Types ---
-export type Tab = 'Home' | 'Courses' | 'AI Toolkit' | 'Article' | 'Events' | 'Discussion' | 'Consultation Service' | 'CourseDetail' | 'CoursePlayer' | 'ToolDetail' | 'ArticleDetail' | 'CourseEnroll' | 'EditProfile' | 'Settings' | 'Profile';
+export type Tab = 'Home' | 'Courses' | 'AI Toolkit' | 'Article' | 'Events' | 'Discussion' | 'Consultation Service' | 'CourseDetail' | 'CoursePlayer' | 'ToolDetail' | 'ArticleDetail' | 'CourseEnroll' | 'EditProfile' | 'Settings' | 'Profile' | 'Notifications';
 
-const DashboardView = ({ onLogout }: { onLogout: () => void }) => {
+const DashboardView = ({ onLogout, language, setLanguage }: { onLogout: () => void; language: 'id' | 'en'; setLanguage: (lang: 'id' | 'en') => void }) => {
   const [activeTab, setActiveTab] = useState<Tab>('Home');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -50,7 +50,7 @@ const DashboardView = ({ onLogout }: { onLogout: () => void }) => {
   };
 
   return (
-    <div className="flex min-h-screen font-sans selection:bg-[#e8ba00] selection:text-black bg-white text-gray-900">
+    <div className="flex h-screen overflow-hidden font-sans selection:bg-[#e8ba00] selection:text-black bg-white text-gray-900">
       
       {/* FLOATING AI CHAT */}
       <FloatingAIChat />
@@ -64,7 +64,9 @@ const DashboardView = ({ onLogout }: { onLogout: () => void }) => {
               ? 'AI Toolkit' 
               : activeTab === 'ArticleDetail'
                 ? 'Article'
-                : activeTab
+                : activeTab === 'Notifications'
+                  ? 'Home'
+                  : activeTab
         } 
         setActiveTab={(tab) => {
           setActiveTab(tab);
@@ -77,9 +79,10 @@ const DashboardView = ({ onLogout }: { onLogout: () => void }) => {
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         onToggleSidebar={() => setIsCollapsed(!isCollapsed)}
+        language={language}
       />
 
-      <main className={`transition-all duration-300 ${isCollapsed ? 'lg:ml-[100px]' : 'lg:ml-[280px]'} ml-0 flex-1 min-h-screen relative overflow-hidden bg-[#f7f9fb]`}>
+      <main className={`transition-all duration-300 ${isCollapsed ? 'lg:ml-[100px]' : 'lg:ml-[280px]'} ml-0 flex-1 h-screen flex flex-col relative overflow-hidden bg-[#f7f9fb]`}>
         {/* Background Dot Grid & Soft Ambient Glowing Gradient Auras */}
         <div 
           className="absolute inset-0 pointer-events-none z-0 opacity-80"
@@ -99,25 +102,37 @@ const DashboardView = ({ onLogout }: { onLogout: () => void }) => {
               setIsCollapsed(!isCollapsed);
             }
           }} 
+          language={language}
+          onViewNotifications={() => setActiveTab('Notifications')}
         />
 
-        <div className="p-4 md:p-8 lg:p-12 h-[calc(100vh-80px)] md:h-[calc(100vh-100px)] overflow-y-auto overflow-x-hidden custom-scrollbar relative z-10">
+        <div className="p-4 md:p-8 lg:p-12 flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-10">
           <div className="max-w-7xl mx-auto">
-            {activeTab === 'Home' && <Dashboard onResumeLearning={() => setActiveTab('CourseDetail')} onViewProfile={handleViewProfile} />}
+            {activeTab === 'Home' && (
+              <Dashboard 
+                onResumeLearning={() => setActiveTab('CourseDetail')} 
+                onViewProfile={handleViewProfile} 
+                language={language} 
+                onReadArticle={handleReadArticle}
+                onViewEvents={() => setActiveTab('Events')}
+                onViewCourses={() => setActiveTab('Courses')}
+              />
+            )}
             {activeTab === 'Courses' && <Courses onStartJourney={() => setActiveTab('CourseEnroll')} />}
             {activeTab === 'AI Toolkit' && <AIToolkit onSelectTool={handleSelectTool} />}
             {activeTab === 'Article' && <Article onReadMore={handleReadArticle} />}
             {activeTab === 'Events' && <Events />}
-            {activeTab === 'Discussion' && <Discussion onViewProfile={handleViewProfile} />}
-            {activeTab === 'Consultation Service' && <Consultation />}
+            {activeTab === 'Discussion' && <Discussion onViewProfile={handleViewProfile} language={language} />}
+            {activeTab === 'Consultation Service' && <Consultation language={language} />}
             {activeTab === 'CourseDetail' && <CourseDetail onStartLearning={() => setActiveTab('CoursePlayer')} />}
             {activeTab === 'CoursePlayer' && <CoursePlayer onBack={() => setActiveTab('CourseDetail')} />}
             {activeTab === 'ToolDetail' && selectedTool && <ToolDetail tool={selectedTool} onBack={() => setActiveTab('AI Toolkit')} />}
             {activeTab === 'ArticleDetail' && selectedArticle && <ArticleDetail article={selectedArticle} onBack={() => setActiveTab('Article')} />}
             {activeTab === 'CourseEnroll' && <CourseEnroll onCancel={() => setActiveTab('Courses')} onEnroll={() => setActiveTab('CourseDetail')} />}
             {activeTab === 'EditProfile' && <EditProfile />}
-            {activeTab === 'Settings' && <Settings />}
+            {activeTab === 'Settings' && <Settings language={language} setLanguage={setLanguage} />}
             {activeTab === 'Profile' && <Profile user={selectedProfile} onBack={() => setActiveTab('Discussion')} />}
+            {activeTab === 'Notifications' && <Notifications language={language} />}
           </div>
         </div>
       </main>
@@ -130,6 +145,16 @@ const DashboardView = ({ onLogout }: { onLogout: () => void }) => {
 export default function App() {
   const [view, setView] = useState<'landing' | 'auth' | 'dashboard'>('landing');
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login');
+  
+  const [language, setLanguage] = useState<'id' | 'en'>(() => {
+    const stored = localStorage.getItem('jagoai_language');
+    return (stored === 'en' || stored === 'id') ? stored : 'id';
+  });
+
+  const handleSetLanguage = (lang: 'id' | 'en') => {
+    setLanguage(lang);
+    localStorage.setItem('jagoai_language', lang);
+  };
 
   if (view === 'landing') {
     return (
@@ -152,7 +177,7 @@ export default function App() {
     );
   }
 
-  return <DashboardView onLogout={() => setView('landing')} />;
+  return <DashboardView onLogout={() => setView('landing')} language={language} setLanguage={handleSetLanguage} />;
 }
 
 

@@ -1,23 +1,41 @@
 import React from 'react';
 import { Symbol } from '../components/ui/Symbol';
 
-export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearning: () => void; onViewProfile: (user: any) => void }) => {
+export const Dashboard = ({ 
+  onResumeLearning, 
+  onViewProfile, 
+  language,
+  onReadArticle,
+  onViewEvents,
+  onViewCourses
+}: { 
+  onResumeLearning: () => void; 
+  onViewProfile: (user: any) => void; 
+  language: 'id' | 'en';
+  onReadArticle?: (article: any) => void;
+  onViewEvents?: () => void;
+  onViewCourses?: () => void;
+}) => {
   return (
     <div className="space-y-10">
       {/* HEADER & ACHIEVEMENT VAULT */}
       <div className="space-y-6 md:space-y-10">
         <div className="flex justify-between items-center">
           <div className="space-y-1 text-left">
-            <h1 className="text-xl md:text-3xl font-display font-bold text-[#1800ad]">Selamat Datang, Alex</h1>
-            <p className="text-[11px] md:text-sm text-gray-400 font-medium">Lanjutkan perjalanan AI-mu hari ini.</p>
+            <h1 className="text-xl md:text-3xl font-display font-bold text-[#1800ad]">
+              {language === 'id' ? 'Selamat Datang, Alex' : 'Welcome back, Alex'}
+            </h1>
+            <p className="text-[11px] md:text-sm text-gray-400 font-medium">
+              {language === 'id' ? 'Lanjutkan perjalanan AI-mu hari ini.' : 'Continue your AI journey today.'}
+            </p>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-100 rounded-3xl p-3 md:p-5 lg:p-6 shadow-sm flex flex-col xl:flex-row items-center justify-between gap-4 md:gap-8 lg:gap-12 transition-colors">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-10 w-full xl:w-auto">
-            <div className="space-y-2.5 text-center md:text-left w-full md:w-auto">
-              <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest block">Achievement Vault</span>
-              <div className="flex justify-center md:justify-start gap-1.5 md:gap-2 flex-wrap">
+        <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 transition-colors text-left w-full">
+          <div className="flex flex-col sm:flex-row items-center gap-6 md:gap-10 w-full md:w-auto text-center sm:text-left">
+            <div className="space-y-2">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Achievement Vault</span>
+              <div className="flex justify-center sm:justify-start gap-2 flex-wrap">
                 {[
                   { icon: 'military_tech', color: 'bg-[#e8ba00]/10 text-[#e8ba00]', text: 'Top Scorer' },
                   { icon: 'cognition', color: 'bg-[#1800ad]/10 text-[#1800ad]', text: 'Deep Thinker' },
@@ -26,11 +44,11 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
                   { icon: 'star', color: 'bg-gray-100 text-gray-300', text: 'Elite Member' }
                 ].map((badge, i) => (
                   <div key={i} className="group relative">
-                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border border-gray-50/50 ${badge.color}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border border-gray-50/50 ${badge.color}`}>
                       <Symbol name={badge.icon} className="text-lg md:text-xl" fill={i < 4} />
                     </div>
                     {/* Hover Explanation Tooltip - Hidden on Mobile */}
-                    <div className="absolute hidden md:block bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all translate-y-1 group-hover:translate-y-0 z-50 whitespace-nowrap shadow-xl">
+                    <div className="absolute hidden sm:block bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all translate-y-1 group-hover:translate-y-0 z-50 whitespace-nowrap shadow-xl">
                       {badge.text}
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-gray-900"></div>
                     </div>
@@ -39,18 +57,21 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
               </div>
             </div>
 
-            <div className="space-y-1 text-center md:text-left w-full md:w-auto pb-3 md:pb-0 border-b md:border-b-0 border-gray-50">
-               <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest block">XP Progress</span>
-               <div className="flex items-baseline justify-center md:justify-start gap-1">
-                 <span className="text-lg md:text-2xl font-display font-black text-gray-900 tabular-nums">12,450</span>
-                 <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase">XP</span>
+            {/* Vertical Divider */}
+            <div className="hidden sm:block w-px h-12 bg-gray-100 self-center"></div>
+
+            <div className="space-y-1">
+               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">XP Progress</span>
+               <div className="flex items-baseline justify-center sm:justify-start gap-1">
+                 <span className="text-xl md:text-2xl font-display font-black text-gray-900 tabular-nums">12,450</span>
+                 <span className="text-[10px] font-bold text-gray-400 uppercase">XP</span>
                </div>
             </div>
           </div>
 
-          <button className="w-full md:w-auto px-5 md:px-8 py-2 md:py-4 bg-[#4a3a00] text-white rounded-2xl flex items-center justify-center gap-2.5 md:gap-4 hover:bg-black transition-colors group">
-             <Symbol name="trophy" className="text-base md:text-xl text-[#e8ba00] fill-1" />
-             <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">Level 12 - AI Explorer</span>
+          <button className="w-full md:w-auto px-6 py-3.5 bg-[#4a3a00] text-white rounded-2xl flex items-center justify-center gap-3 hover:bg-black transition-colors group shrink-0 shadow-sm">
+             <Symbol name="trophy" className="text-lg text-[#e8ba00] fill-1 animate-pulse" />
+             <span className="text-[10px] font-black uppercase tracking-widest">Level 12 - AI Explorer</span>
           </button>
         </div>
       </div>
@@ -152,8 +173,8 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
                     <span className={`text-sm font-display font-black ${player.user ? 'text-[#1800ad]' : 'text-gray-900'}`}>{player.pts}</span>
                   </div>
 
-                  {/* Profile Detail Hover */}
-                  <div className="absolute left-full top-0 ml-4 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 opacity-0 group-hover:opacity-100 pointer-events-none transition-all translate-x-2 group-hover:translate-x-0 z-[110]">
+                  {/* Profile Detail Hover (appears to the left to avoid screen clipping) */}
+                  <div className="absolute right-full top-0 mr-4 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 opacity-0 group-hover:opacity-100 pointer-events-none transition-all -translate-x-2 group-hover:translate-x-0 z-[110]">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="w-12 h-12 rounded-xl overflow-hidden shadow-md">
                         <img src={`https://i.pravatar.cc/100?u=${player.avatar}`} alt={player.name} className="w-full h-full object-cover" />
@@ -185,15 +206,34 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
              <h3 className="text-2xl font-display font-bold text-[#1800ad]">Knowledge at the Speed of Light</h3>
              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Articles & Insights</p>
           </div>
-          <a href="#" className="text-xs font-bold text-[#e8ba00] uppercase tracking-widest hover:underline">Read All Posts</a>
+          <button 
+            onClick={() => onViewCourses?.()} 
+            className="text-xs font-bold text-[#e8ba00] uppercase tracking-widest hover:underline cursor-pointer border-none bg-transparent"
+          >
+            {language === 'id' ? 'Baca Semua Artikel' : 'Read All Posts'}
+          </button>
         </div>
         <div className="grid grid-cols-1 gap-6">
           {[
-            { title: "The Future of Multimodal LLMs in 2026", author: "Dr. Julian", read: "5 min read", img: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&fit=crop" },
-            { title: "Fine-tuning YOLOv10 for Real-time Edge Computing", author: "JagoAI Lab", read: "8 min read", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&fit=crop" },
-            { title: "AI Ethics: Building Safe Systems for Indonesia's Youth", author: "Research Team", read: "12 min read", img: "https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=400&fit=crop" }
+            { id: 1, title: "The Future of Multimodal LLMs in 2026", author: "Dr. Julian", read: "5 min read", img: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&fit=crop" },
+            { id: 2, title: "Fine-tuning YOLOv10 for Real-time Edge Computing", author: "JagoAI Lab", read: "8 min read", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&fit=crop" },
+            { id: 3, title: "AI Ethics: Building Safe Systems for Indonesia's Youth", author: "Research Team", read: "12 min read", img: "https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=400&fit=crop" }
           ].map((art, i) => (
-            <div key={i} className="bg-white border border-gray-100 rounded-[28px] md:rounded-[32px] p-4 md:p-6 flex items-center gap-4 md:gap-8 group cursor-pointer hover:shadow-xl transition-all min-h-[90px] md:h-32">
+            <div 
+              key={i} 
+              onClick={() => onReadArticle?.({
+                id: art.id,
+                title: art.title,
+                author: art.author,
+                date: 'May 31, 2026',
+                readTime: art.read,
+                image: art.img,
+                category: 'AI Research',
+                desc: `Sebuah analisis mendalam tentang ${art.title} untuk meningkatkan pemahaman teknologi AI terkini di tahun 2026.`,
+                content: `Platform JagoAI mempublikasikan artikel riset mendalam mengenai ${art.title}. Menelusuri tantangan implementasi, optimasi kode, dan integrasi praktis yang dapat dicoba langsung di sandbox sekolah kami.`
+              })}
+              className="bg-white border border-gray-100 rounded-[28px] md:rounded-[32px] p-4 md:p-6 flex items-center gap-4 md:gap-8 group cursor-pointer hover:shadow-xl transition-all min-h-[90px] md:h-32"
+            >
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl overflow-hidden shrink-0">
                 <img src={art.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
               </div>
@@ -212,9 +252,12 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
 
       {/* EVENTS SECTION */}
       <div className="space-y-8 text-left">
-         <h3 className="text-xl md:text-2xl font-display font-bold text-[#1800ad] flex items-center gap-2 md:gap-3 text-left"><Symbol name="event" className="text-xl md:text-2xl" /> Academic Milestones</h3>
+         <h3 onClick={onViewEvents} className="text-xl md:text-2xl font-display font-bold text-[#1800ad] flex items-center gap-2 md:gap-3 text-left hover:text-[#e8ba00] transition-colors cursor-pointer"><Symbol name="event" className="text-xl md:text-2xl" /> Academic Milestones</h3>
          <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 md:gap-8">
-           <div className="bg-[#1800ad]/10 rounded-2xl md:rounded-[32px] p-4 md:p-8 text-[#1800ad] space-y-4 md:space-y-6 relative overflow-hidden group border border-[#1800ad]/10 flex flex-col justify-between h-full">
+           <div 
+             onClick={onViewEvents}
+             className="bg-[#1800ad]/10 rounded-2xl md:rounded-[32px] p-4 md:p-8 text-[#1800ad] space-y-4 md:space-y-6 relative overflow-hidden group border border-[#1800ad]/10 flex flex-col justify-between h-full cursor-pointer hover:shadow-md transition-all"
+           >
               <div className="absolute right-[-10%] top-[-10%] opacity-5 group-hover:scale-110 transition-transform hidden sm:block">
                 <Symbol name="groups" className="text-[60px] md:text-[120px]" />
               </div>
@@ -232,10 +275,13 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
                     ))}
                     <div className="w-5 h-5 md:w-8 md:h-8 rounded-full border border-white bg-[#e8ba00] flex items-center justify-center text-[7px] md:text-[10px] font-black text-black">+24</div>
                  </div>
-                 <button className="px-2 md:px-6 py-1.5 md:py-3 bg-[#1800ad] text-white rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black tracking-widest uppercase transition-all hover:bg-black">Join</button>
+                 <button onClick={(e) => { e.stopPropagation(); onViewEvents?.(); }} className="px-2 md:px-6 py-1.5 md:py-3 bg-[#1800ad] text-white rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black tracking-widest uppercase transition-all hover:bg-black cursor-pointer">Join</button>
               </div>
            </div>
-           <div className="bg-white border border-gray-100 rounded-2xl md:rounded-[32px] p-4 md:p-8 flex flex-col justify-between text-left transition-colors h-full">
+           <div 
+             onClick={onViewEvents}
+             className="bg-white border border-gray-100 rounded-2xl md:rounded-[32px] p-4 md:p-8 flex flex-col justify-between text-left transition-all hover:shadow-md cursor-pointer h-full"
+           >
               <div className="space-y-2 md:space-y-4 text-left">
                  <div className="flex justify-between items-start">
                    <div className="w-8 h-8 md:w-12 md:h-12 bg-[#e8ba00]/10 rounded-lg md:rounded-2xl flex items-center justify-center text-[#e8ba00]">
@@ -256,7 +302,7 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
 
       {/* MODUL AI BARU */}
       <div className="space-y-8 pb-32 text-left">
-        <h3 className="text-2xl font-display font-bold text-[#1800ad] flex items-center gap-3 text-left">
+        <h3 onClick={onViewCourses} className="text-xl md:text-2xl font-display font-bold text-[#1800ad] flex items-center gap-3 text-left hover:text-[#e8ba00] transition-colors cursor-pointer">
           <Symbol name="grid_view" className="text-2xl" />
           Modul AI Baru
         </h3>
@@ -266,7 +312,11 @@ export const Dashboard = ({ onResumeLearning, onViewProfile }: { onResumeLearnin
             { label: 'AI untuk SMA', icon: 'school', color: 'bg-amber-50 text-amber-500', desc: 'Pemrograman AI tingkat menengah & Analisis Data.', modules: '12 MODUL' },
             { label: 'AI untuk SMK', icon: 'precision_manufacturing', color: 'bg-sky-50 text-sky-500', desc: 'Implementasi praktis AI di industri and manufaktur.', modules: '15 MODUL' }
           ].map((modul, i) => (
-            <div key={i} className="bg-white p-3 md:p-8 rounded-2xl md:rounded-[32px] border border-gray-100 flex flex-col items-center text-center space-y-3 md:space-y-6 hover:-translate-y-2 hover:shadow-md transition-all duration-300 shadow-sm relative overflow-hidden group">
+            <div 
+              key={i} 
+              onClick={onViewCourses}
+              className="bg-white p-3 md:p-8 rounded-2xl md:rounded-[32px] border border-gray-100 flex flex-col items-center text-center space-y-3 md:space-y-6 hover:-translate-y-2 hover:shadow-md transition-all duration-300 shadow-sm relative overflow-hidden group cursor-pointer"
+            >
                {/* Decorative background hover glow */}
                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 via-indigo-50/0 to-indigo-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                <div className={`w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center ${modul.color} shadow-inner shrink-0 group-hover:scale-110 transition-transform duration-300`}>

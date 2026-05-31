@@ -2,48 +2,235 @@ import React, { useState } from 'react';
 import { Symbol } from '../components/ui/Symbol';
 import { motion, AnimatePresence } from 'motion/react';
 
-type ServiceView = 'main' | 'mentorship' | 'career' | 'ticket' | 'chat';
+type ServiceView = 'main' | 'mentorship' | 'career' | 'ticket' | 'chat' | 'book-session' | 'start-audit' | 'schedule-mock';
 
-export const Consultation = () => {
+export const Consultation = ({ language }: { language: 'id' | 'en' }) => {
   const [view, setView] = useState<ServiceView>('main');
+  const [selectedMentor, setSelectedMentor] = useState<string>('Senior AI Engineer');
 
   const renderBreadcrumbs = (title: string) => (
     <button 
       onClick={() => setView('main')}
-      className="flex items-center gap-2 text-gray-400 hover:text-[#1800ad] transition-colors mb-6 group"
+      className="flex items-center gap-2 text-gray-405 text-slate-500 hover:text-[#1800ad] transition-colors mb-6 group cursor-pointer border-none bg-transparent"
     >
       <Symbol name="arrow_back" className="text-xl group-hover:-translate-x-1 transition-transform" />
       <span className="text-[10px] font-black uppercase tracking-widest">Back to Overview</span>
     </button>
   );
 
+  // --- Detailed Page: Book 1-on-1 Mentorship Session ---
+  if (view === 'book-session') {
+    return (
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 text-left">
+        {renderBreadcrumbs(`Book Session with ${selectedMentor}`)}
+        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl space-y-8">
+          <div className="space-y-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#e8ba00]">Step 2 of 2 • Konfirmasi Sesi</span>
+            <h2 className="text-3xl font-display font-bold text-[#1800ad]">Schedule Your Session</h2>
+            <p className="text-slate-500 text-sm">Anda sedang mendaftarkan sesi bimbingan teknis tatap muka privat selama 45 menit bersama <strong className="text-slate-800">{selectedMentor}</strong>.</p>
+          </div>
+          
+          <div className="max-w-2xl space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pilih Tanggal</label>
+                <input type="date" required className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 font-bold" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pilih Slot Waktu</label>
+                <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 font-bold">
+                  <option>09:00 AM - 09:45 AM (WIB)</option>
+                  <option>10:30 AM - 11:15 AM (WIB)</option>
+                  <option>02:00 PM - 02:45 PM (WIB)</option>
+                  <option>04:00 PM - 04:45 PM (WIB)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fokus Topik Bimbingan</label>
+              <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 font-bold">
+                <option>Review Tugas Akhir / Skripsi AI</option>
+                <option>Debugging Model & Pemrograman PyTorch/TensorFlow</option>
+                <option>Prompt Engineering & RAG Architectures</option>
+                <option>Persiapan Karir & Portofolio Kerja</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Detail Blocker / Kebutuhan Diskusi</label>
+              <textarea placeholder="Ceritakan detail masalah coding atau pertanyaan spesifik yang ingin Anda diskusikan agar mentor dapat bersiap..." className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 h-32"></textarea>
+            </div>
+
+            <button 
+              onClick={() => {
+                alert(`Sukses! Sesi bimbingan tatap muka bersama ${selectedMentor} berhasil dijadwalkan. Link ruang virtual konferensi telah dikirim langsung ke email Anda.`);
+                setView('main');
+              }} 
+              className="px-10 py-5 bg-[#1800ad] hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-[#1800ad]/10 cursor-pointer"
+            >
+              Confirm Booking
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Detailed Page: Resume & Portfolio Audit ---
+  if (view === 'start-audit') {
+    return (
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 text-left">
+        {renderBreadcrumbs('Resume & Portfolio Audit')}
+        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl space-y-8">
+          <div className="space-y-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#e8ba00]">Portfolio Evaluator</span>
+            <h2 className="text-3xl font-display font-bold text-[#1800ad]">Submit Your Resume & Portfolio</h2>
+            <p className="text-slate-500 text-sm">Kirim portofolio dan resume Anda. Tim Asesor JagoAI akan melakukan review baris-per-baris dan memberikan audit tertulis yang dikirimkan dalam 24 jam.</p>
+          </div>
+
+          <div className="max-w-2xl space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tautan Portofolio (GitHub / LinkedIn / Website)</label>
+              <div className="relative">
+                <Symbol name="link" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input type="url" placeholder="https://github.com/username/portfolio" required className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-750 font-medium" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Unggah Dokumen Resume (PDF)</label>
+              <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 hover:border-[#1800ad] rounded-2xl cursor-pointer hover:bg-slate-50 transition-all text-center space-y-2 group">
+                <input type="file" accept=".pdf" className="hidden" onChange={(e) => alert(`Resume "${e.target.files?.[0]?.name}" berhasil dimuat!`)} />
+                <Symbol name="upload_file" className="text-4xl text-slate-400 group-hover:text-[#1800ad] transition-colors" />
+                <span className="text-xs font-bold text-slate-700">Pilih Berkas PDF</span>
+                <span className="text-[10px] text-slate-400">Bebas format resume & tanpa batasan ukuran</span>
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target Bidang Karir</label>
+              <input type="text" placeholder="e.g. Machine Learning Engineer, Prompt Specialist, AI Consultant" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-750 font-medium" />
+            </div>
+
+            <button 
+              onClick={() => {
+                alert("Audit Berhasil Diajukan! Tim Evaluator kami akan segera memeriksa resume Anda dan mengirimkan umpan balik komprehensif.");
+                setView('main');
+              }} 
+              className="px-10 py-5 bg-[#1800ad] hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-[#1800ad]/10 cursor-pointer"
+            >
+              Kirim Untuk Audit
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Detailed Page: Schedule Mock Technical Interview ---
+  if (view === 'schedule-mock') {
+    return (
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 text-left">
+        {renderBreadcrumbs('Mock Technical Interview')}
+        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl space-y-8">
+          <div className="space-y-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#e8ba00]">Simulasi Wawancara</span>
+            <h2 className="text-3xl font-display font-bold text-[#1800ad]">Schedule Your Mock Technical Interview</h2>
+            <p className="text-slate-500 text-sm">Latih ketajaman Anda dalam wawancara langsung 1-on-1 yang mencakup tinjauan coding, optimasi model, dan teori sistem AI terdistribusi.</p>
+          </div>
+
+          <div className="max-w-2xl space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Jalur Karir Teknis</label>
+                <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 font-bold">
+                  <option>Machine Learning Engineer Track</option>
+                  <option>Generative AI & LLM Specialist Track</option>
+                  <option>Computer Vision Engineer Track</option>
+                  <option>Data Scientist / Analyst Track</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target Format Rekrutmen</label>
+                <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 font-bold">
+                  <option>Big Tech / FAANG Format</option>
+                  <option>Local Unicorn / Decacorn Format</option>
+                  <option>Fast-Growing AI Tech Startup Format</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pilih Tanggal</label>
+                <input type="date" required className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 font-bold" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Pilih Jam</label>
+                <select className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none text-slate-700 font-bold">
+                  <option>10:00 AM (WIB)</option>
+                  <option>01:30 PM (WIB)</option>
+                  <option>03:30 PM (WIB)</option>
+                </select>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => {
+                alert("Simulasi Wawancara Berhasil Dijadwalkan! Link coding sandbox serta rincian pewawancara teknis Anda telah dikirim.");
+                setView('main');
+              }} 
+              className="px-10 py-5 bg-[#1800ad] hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-[#1800ad]/10 cursor-pointer"
+            >
+              Jadwalkan Wawancara
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (view === 'mentorship') {
     return (
-      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 text-left">
         {renderBreadcrumbs('1-on-1 Mentorship')}
-        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl text-left space-y-10 transition-colors">
+        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl space-y-10 transition-colors">
           <div className="space-y-4">
             <h2 className="text-4xl font-display font-bold text-[#1800ad]">Find Your Perfect Mentor</h2>
-            <p className="text-gray-500 max-w-2xl">Browse through our curated list of industry experts and senior AI engineers ready to help you level up.</p>
+            <p className="text-gray-550">Browse through our curated list of industry experts and senior AI engineers ready to help you level up.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="p-8 rounded-[32px] bg-gray-50 border border-gray-100 space-y-6 hover:shadow-lg transition-all">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-sm">
-                  <img src={`https://i.pravatar.cc/150?u=mentor${i}`} alt="mentor" className="w-full h-full object-cover" />
+            {[1, 2, 3].map(i => {
+              const mentorName = i === 1 ? "Dr. Annisa Rahma" : i === 2 ? "Rian Hidayat, M.T." : "Prof. Bambang Subiyanto";
+              return (
+                <div key={i} className="p-8 rounded-[32px] bg-gray-50 border border-gray-100 space-y-6 hover:shadow-lg transition-all flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-sm">
+                      <img src={`https://i.pravatar.cc/150?u=mentor${i}`} alt="mentor" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-[#1800ad]">{mentorName}</h4>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Senior AI Engineer</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-bold text-[#e8ba00]">#LLM</span>
+                      <span className="px-2 py-1 bg-white border border-slate-100 rounded-lg text-[9px] font-bold text-[#e8ba00]">#PyTorch</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setSelectedMentor(mentorName);
+                      setView('book-session');
+                    }}
+                    className="w-full py-4 bg-[#1800ad] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg shadow-[#1800ad]/10 cursor-pointer mt-4"
+                  >
+                    Book Session
+                  </button>
                 </div>
-                <div>
-                  <h4 className="text-lg font-bold text-[#1800ad]">Mentor Name {i}</h4>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Senior AI Engineer @ Company</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-white rounded-lg text-[9px] font-bold text-[#e8ba00]">#LLM</span>
-                  <span className="px-2 py-1 bg-white rounded-lg text-[9px] font-bold text-[#e8ba00]">#PyTorch</span>
-                </div>
-                <button className="w-full py-4 bg-[#1800ad] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg shadow-[#1800ad]/10">Book Session</button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -52,25 +239,39 @@ export const Consultation = () => {
 
   if (view === 'career') {
     return (
-      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 text-left">
         {renderBreadcrumbs('Career Coaching')}
-        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl text-left space-y-10 border-t-8 border-t-[#e8ba00] transition-colors">
+        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl space-y-10 border-t-8 border-t-[#e8ba00] transition-colors">
           <div className="space-y-4">
             <h2 className="text-4xl font-display font-bold text-[#1800ad]">Supercharge Your AI Career</h2>
-            <p className="text-gray-500 max-w-2xl">Get professional guidance on resume building, interview prep, and landing your dream AI role.</p>
+            <p className="text-gray-550">Get professional guidance on resume building, interview prep, and landing your dream AI role.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div className="p-10 rounded-[32px] bg-[#f8f9fc] space-y-6 transition-colors">
-              <Symbol name="description" className="text-4xl text-[#e8ba00]" />
-              <h3 className="text-xl font-bold text-[#1800ad]">Resume & Portfolio Audit</h3>
-              <p className="text-sm text-gray-500">We'll review your project portfolio and resume to ensure it stands out to top-tier AI labs.</p>
-              <button className="py-4 px-8 bg-[#1800ad] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1800ad]/10">Start Audit</button>
+            <div className="p-10 rounded-[32px] bg-[#f8f9fc] space-y-6 transition-colors flex flex-col justify-between">
+              <div className="space-y-4">
+                <Symbol name="description" className="text-4xl text-[#e8ba00]" />
+                <h3 className="text-xl font-bold text-[#1800ad]">Resume & Portfolio Audit</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">We'll review your project portfolio and resume to ensure it stands out to top-tier AI labs and recruiters.</p>
+              </div>
+              <button 
+                onClick={() => setView('start-audit')}
+                className="py-4 px-8 bg-[#1800ad] hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1800ad]/10 cursor-pointer w-fit mt-6"
+              >
+                Start Audit
+              </button>
             </div>
-            <div className="p-10 rounded-[32px] bg-[#f8f9fc] space-y-6 transition-colors">
-              <Symbol name="record_voice_over" className="text-4xl text-[#e8ba00]" />
-              <h3 className="text-xl font-bold text-[#1800ad]">Mock Technical Interview</h3>
-              <p className="text-sm text-gray-500">Live 1-on-1 coding and theory interviews mimicking processes at FAANG/MAANG companies.</p>
-              <button className="py-4 px-8 bg-[#1800ad] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1800ad]/10">Schedule Mock</button>
+            <div className="p-10 rounded-[32px] bg-[#f8f9fc] space-y-6 transition-colors flex flex-col justify-between">
+              <div className="space-y-4">
+                <Symbol name="record_voice_over" className="text-4xl text-[#e8ba00]" />
+                <h3 className="text-xl font-bold text-[#1800ad]">Mock Technical Interview</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">Live 1-on-1 coding and theory interviews mimicking exact processes at FAANG and major AI companies.</p>
+              </div>
+              <button 
+                onClick={() => setView('schedule-mock')}
+                className="py-4 px-8 bg-[#1800ad] hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#1800ad]/10 cursor-pointer w-fit mt-6"
+              >
+                Schedule Mock
+              </button>
             </div>
           </div>
         </div>
@@ -80,14 +281,14 @@ export const Consultation = () => {
 
   if (view === 'ticket') {
     return (
-      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 text-left">
         {renderBreadcrumbs('Support Ticket')}
-        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl text-left space-y-10">
+        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl space-y-10">
           <div className="space-y-4">
             <h2 className="text-4xl font-display font-bold text-[#1800ad]">Open Technical Ticket</h2>
-            <p className="text-gray-500 max-w-2xl">Report a technical blocker or request deep-dive assistance from our engineering team.</p>
+            <p className="text-gray-550">Report a technical blocker or request deep-dive assistance from our engineering team.</p>
           </div>
-          <form className="max-w-2xl space-y-6">
+          <form className="max-w-2xl space-y-6 text-left" onSubmit={(e) => { e.preventDefault(); alert('Tiket pengaduan teknis berhasil diajukan! Tim JagoAI akan memprosesnya.'); setView('main'); }}>
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-[#e8ba00]">Urgency Level</label>
               <select className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm outline-none focus:ring-2 focus:ring-[#e8ba00]">
@@ -98,44 +299,10 @@ export const Consultation = () => {
             </div>
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-[#e8ba00]">Issue Description</label>
-              <textarea placeholder="Describe your technical emergency..." className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-6 text-sm outline-none focus:ring-2 focus:ring-[#e8ba00] h-40"></textarea>
+              <textarea placeholder="Describe your technical emergency..." required className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-6 text-sm outline-none focus:ring-2 focus:ring-[#e8ba00] h-40"></textarea>
             </div>
-            <button className="px-10 py-5 bg-[#1800ad] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl shadow-[#1800ad]/10">Submit Ticket</button>
+            <button type="submit" className="px-10 py-5 bg-[#1800ad] hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-[#1800ad]/10 cursor-pointer">Submit Ticket</button>
           </form>
-        </div>
-      </div>
-    );
-  }
-
-  if (view === 'chat') {
-    return (
-      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
-        {renderBreadcrumbs('Live Chat')}
-        <div className="bg-white rounded-[48px] p-12 border border-gray-100 shadow-xl text-left flex flex-col h-[600px] transition-colors">
-          <div className="pb-6 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#1800ad]/10 rounded-full flex items-center justify-center">
-                <Symbol name="support_agent" className="text-2xl text-[#1800ad]" />
-              </div>
-              <div>
-                <h3 className="font-bold text-[#1800ad]">Technical Concierge</h3>
-                <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> 24/7 Active
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-10 space-y-6">
-            <div className="bg-gray-50 p-6 rounded-3xl rounded-tl-none max-w-md text-sm text-gray-700 transition-colors">
-              Halo! Saya Technical Support JagoAI. Ada yang bisa saya bantu terkait deployment atau coding Anda saat ini?
-            </div>
-          </div>
-          <div className="pt-6 border-t border-gray-100 flex gap-4">
-            <input type="text" placeholder="Tulis masalah Anda..." className="flex-1 bg-gray-50 border-none rounded-2xl px-6 text-sm focus:ring-2 focus:ring-[#1800ad] outline-none transition-colors" />
-            <button className="w-14 h-14 bg-[#1800ad] text-white rounded-2xl flex items-center justify-center hover:bg-black transition-all shadow-lg shadow-[#1800ad]/10">
-              <Symbol name="send" />
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -145,8 +312,14 @@ export const Consultation = () => {
     <div className="space-y-8 md:space-y-12 pb-24 text-left">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-8">
         <div className="space-y-1 md:space-y-2">
-          <h1 className="text-2xl md:text-4xl font-display font-bold text-[#1800ad]">Consultation Service</h1>
-          <p className="text-[10px] md:text-sm text-gray-400 font-medium max-w-xl">Get personalized guidance from AI experts and industry professionals.</p>
+          <h1 className="text-2xl md:text-4xl font-display font-bold text-[#1800ad]">
+            {language === 'id' ? 'Layanan Konsultasi' : 'Consultation Service'}
+          </h1>
+          <p className="text-[10px] md:text-sm text-gray-400 font-medium max-w-xl">
+            {language === 'id' 
+              ? 'Dapatkan bimbingan privat langsung dari pakar AI dan profesional berpengalaman di industri.' 
+              : 'Get personalized guidance from AI experts and industry professionals.'}
+          </p>
         </div>
       </div>
 
@@ -167,7 +340,7 @@ export const Consultation = () => {
                  <span className="text-[11px] md:text-sm font-bold text-gray-700">Recorded for future reference</span>
               </div>
            </div>
-           <button onClick={() => setView('mentorship')} className="w-full py-3.5 md:py-5 bg-[#1800ad] text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest hover:bg-black transition-colors mt-auto shadow-lg shadow-[#1800ad]/20 active:scale-[0.98]">
+           <button onClick={() => setView('mentorship')} className="w-full py-3.5 md:py-5 bg-[#1800ad] text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest hover:bg-black transition-colors mt-auto shadow-lg shadow-[#1800ad]/20 active:scale-[0.98] cursor-pointer">
               Find a Mentor
            </button>
         </div>
@@ -188,7 +361,7 @@ export const Consultation = () => {
                  <span className="text-[11px] md:text-sm font-bold text-gray-700">Exclusive hiring network access</span>
               </div>
            </div>
-           <button onClick={() => setView('career')} className="w-full py-3.5 md:py-5 bg-[#e8ba00] text-black rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest hover:bg-black transition-colors mt-auto shadow-lg shadow-[#e8ba00]/20 active:scale-[0.98]">
+           <button onClick={() => setView('career')} className="w-full py-3.5 md:py-5 bg-[#e8ba00] text-black rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest hover:bg-black transition-colors mt-auto shadow-lg shadow-[#e8ba00]/20 active:scale-[0.98] cursor-pointer">
               Start Coaching
            </button>
         </div>
@@ -202,10 +375,8 @@ export const Consultation = () => {
             <h2 className="text-xl md:text-5xl font-display font-bold leading-tight">Need immediate technical help?</h2>
             <p className="text-[11px] md:text-gray-500 leading-relaxed">Our AI specialized support team is available 24/7 for urgent technical blockers and deployment emergencies.</p>
             <div className="flex flex-col sm:flex-row gap-3 md:gap-6 pt-2 md:pt-4">
-               <button onClick={() => setView('ticket')} className="px-6 py-3.5 md:px-10 md:py-5 bg-[#1800ad] text-white rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest hover:bg-black transition-colors">Open Ticket</button>
-               <button onClick={() => setView('chat')} className="px-6 py-3.5 md:px-10 md:py-5 bg-gray-50 border border-gray-200 hover:bg-gray-100 rounded-xl md:rounded-2xl font-black text-[9px] md:text-xs uppercase tracking-widest transition-colors flex items-center gap-2 md:gap-3 justify-center">
-                  <Symbol name="chat" className="text-lg md:text-xl text-[#e8ba00]" /> Live Chat
-               </button>
+               {/* Hapus tombol Live Chat, hanya menyisakan tombol Open Ticket yang disempurnakan */}
+               <button onClick={() => setView('ticket')} className="px-8 py-4 bg-[#1800ad] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-colors shadow-lg shadow-[#1800ad]/20 active:scale-[0.98] cursor-pointer w-full sm:w-auto text-center justify-center">Open Technical Ticket</button>
             </div>
          </div>
       </div>

@@ -6,12 +6,30 @@ interface HeaderProps {
   onToggleSidebar: () => void;
 }
 
-export const Header = ({ onToggleSidebar }: HeaderProps) => {
+export const Header = ({ onToggleSidebar, language, onViewNotifications }: HeaderProps & { language: 'id' | 'en'; onViewNotifications: () => void }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Modul Baru Tersedia', desc: 'Kursus Neural Robotics Anda memiliki modul baru: "Advanced Pathfinding".', time: '2 Jam yang lalu', isRead: false },
-    { id: 2, title: 'Tugas Selesai Dinilai', desc: 'Tugas "Vision Logic 101" Anda telah dinilai oleh Mentor Dr. Julian.', time: '1 Hari yang lalu', isRead: true },
-    { id: 3, title: 'Event Mendatang', desc: 'JagoAI Workshop: Generative AI for Startups akan dimulai besok jam 10:00.', time: '2 Hari yang lalu', isRead: true }
+    { 
+      id: 1, 
+      title: language === 'id' ? 'Modul Baru Tersedia' : 'New Module Available', 
+      desc: language === 'id' ? 'Kursus Neural Robotics Anda memiliki modul baru: "Advanced Pathfinding".' : 'Your Neural Robotics course has a new module: "Advanced Pathfinding".', 
+      time: language === 'id' ? '2 Jam yang lalu' : '2 Hours ago', 
+      isRead: false 
+    },
+    { 
+      id: 2, 
+      title: language === 'id' ? 'Tugas Selesai Dinilai' : 'Assignment Graded', 
+      desc: language === 'id' ? 'Tugas "Vision Logic 101" Anda telah dinilai oleh Mentor Dr. Julian.' : 'Your assignment "Vision Logic 101" has been graded by Mentor Dr. Julian.', 
+      time: language === 'id' ? '1 Hari yang lalu' : '1 Day ago', 
+      isRead: true 
+    },
+    { 
+      id: 3, 
+      title: language === 'id' ? 'Event Mendatang' : 'Upcoming Event', 
+      desc: language === 'id' ? 'JagoAI Workshop: Generative AI for Startups akan dimulai besok jam 10:00.' : 'JagoAI Workshop: Generative AI for Startups starts tomorrow at 10:00.', 
+      time: language === 'id' ? '2 Hari yang lalu' : '2 Days ago', 
+      isRead: true 
+    }
   ]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -36,14 +54,16 @@ export const Header = ({ onToggleSidebar }: HeaderProps) => {
         <Symbol name="search" className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300" />
         <input 
           type="text" 
-          placeholder="Search AI Insights..." 
+          placeholder={language === 'id' ? 'Cari Wawasan AI...' : 'Search AI Insights...'} 
           className="w-full pl-14 pr-6 py-2.5 bg-[#f8f9fc] border-none rounded-2xl text-[12px] outline-none focus:bg-white focus:ring-2 focus:ring-[#1800ad]/5 transition-all placeholder:text-gray-400" 
         />
       </div>
 
       <div className="flex items-center gap-2 md:gap-6 shrink-0">
         <div className="hidden lg:flex items-center gap-4 py-2 px-6 border-r border-gray-100">
-          <p className="text-[11px] font-black text-[#1800ad] uppercase tracking-widest text-left">Learner Portal</p>
+          <p className="text-[11px] font-black text-[#1800ad] uppercase tracking-widest text-left">
+            {language === 'id' ? 'Portal Siswa' : 'Learner Portal'}
+          </p>
         </div>
 
         <div className="flex items-center gap-4">
@@ -69,8 +89,12 @@ export const Header = ({ onToggleSidebar }: HeaderProps) => {
                     className="absolute right-0 mt-4 w-[380px] bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-50 overflow-hidden z-[100]"
                   >
                     <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-                      <h4 className="text-sm font-display font-bold text-[#1800ad]">Notifications</h4>
-                      <button onClick={markAllRead} className="text-[10px] font-black text-[#e8ba00] uppercase tracking-widest hover:text-black">Mark all read</button>
+                      <h4 className="text-sm font-display font-bold text-[#1800ad]">
+                        {language === 'id' ? 'Notifikasi' : 'Notifications'}
+                      </h4>
+                      <button onClick={markAllRead} className="text-[10px] font-black text-[#e8ba00] uppercase tracking-widest hover:text-black">
+                        {language === 'id' ? 'Tandai semua dibaca' : 'Mark all read'}
+                      </button>
                     </div>
                     <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                       {notifications.map((n) => (
@@ -87,7 +111,15 @@ export const Header = ({ onToggleSidebar }: HeaderProps) => {
                         </div>
                       ))}
                     </div>
-                    <button className="w-full py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:bg-gray-50 transition-colors">See all updates</button>
+                    <button 
+                      onClick={() => {
+                        setIsNotifOpen(false);
+                        onViewNotifications();
+                      }}
+                      className="w-full py-4 text-[10px] font-black text-gray-455 text-[#e8ba00] uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                    >
+                      {language === 'id' ? 'Lihat semua update' : 'See all updates'}
+                    </button>
                   </motion.div>
                 </>
               )}
