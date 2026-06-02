@@ -228,8 +228,8 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
   // Filters logic
   const filteredCourses = courseList.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          course.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          course.category.toLowerCase().includes(searchTerm.toLowerCase());
+      course.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'Semua' || course.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -242,10 +242,10 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
   return (
     <div className="bg-[#f7f9fb] min-h-screen text-gray-800 font-sans selection:bg-[#e8ba00] selection:text-black leading-relaxed flex flex-col text-left">
-      
+
       {/* 1. TOP NAV BAR (PREMIUM JAGOAI BRANDED) */}
       <nav id="landing-navbar" className="bg-white/95 backdrop-blur-md border-b border-gray-100 py-3.5 px-4 md:px-10 sticky top-0 z-[1000] shadow-sm flex items-center justify-between gap-4 h-14 sm:h-16">
-        
+
         {/* Left: Brand Logo (Beautifully visible on all screens) */}
         <div className="flex items-center gap-3 shrink-0 cursor-pointer" onClick={() => { setSearchTerm(''); setSelectedCategory('Semua'); setIsMobileMenuOpen(false); }}>
           <div className="w-10 h-10 bg-[#1800ad] rounded-xl flex items-center justify-center shadow-md">
@@ -261,32 +261,32 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
         {/* Center: Desktop Navigation Links (Hidden on mobile/tablet, shown on lg PC screens) */}
         <div className="hidden lg:flex items-center gap-10 xl:gap-14 text-xs font-bold uppercase tracking-wider text-gray-600">
-          <button 
-            onClick={() => scrollToSection('landing-hero')} 
+          <button
+            onClick={() => scrollToSection('landing-hero')}
             className="hover:text-[#1800ad] cursor-pointer transition-colors duration-200 text-left border-none bg-transparent font-bold"
           >
             Home
           </button>
-          <button 
-            onClick={() => scrollToSection('landing-courses')} 
+          <button
+            onClick={() => scrollToSection('landing-courses')}
             className="hover:text-[#1800ad] cursor-pointer transition-colors duration-200 text-left border-none bg-transparent font-bold"
           >
             Courses
           </button>
-          <button 
-            onClick={() => scrollToSection('landing-why')} 
+          <button
+            onClick={() => scrollToSection('landing-why')}
             className="hover:text-[#1800ad] cursor-pointer transition-colors duration-200 text-left border-none bg-transparent font-bold"
           >
             Features
           </button>
-          <button 
-            onClick={() => scrollToSection('landing-testimonials')} 
+          <button
+            onClick={() => scrollToSection('landing-testimonials')}
             className="hover:text-[#1800ad] cursor-pointer transition-colors duration-200 text-left border-none bg-transparent font-bold"
           >
             Testimonials
           </button>
-          <button 
-            onClick={() => scrollToSection('landing-faq')} 
+          <button
+            onClick={() => scrollToSection('landing-faq')}
             className="hover:text-[#1800ad] cursor-pointer transition-colors duration-200 text-left border-none bg-transparent font-bold"
           >
             FAQ
@@ -296,7 +296,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
         {/* Right content controls */}
         <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
           {/* Desktop Language Selector (Hidden on mobile/tablet, shown on lg PC screens) */}
-          <button 
+          <button
             onClick={() => setSelectedLanguage(selectedLanguage === 'id' ? 'en' : 'id')}
             className="hidden lg:flex items-center gap-1 text-xs font-bold text-gray-600 hover:text-[#1800ad] transition-colors cursor-pointer mr-2"
           >
@@ -304,14 +304,14 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
             <span>{selectedLanguage === 'id' ? 'Bahasa: Indonesia' : 'Language: English'}</span>
           </button>
 
-          <button 
+          <button
             onClick={() => onNavigateToAuth('login')}
             className="hidden lg:inline-flex px-5 py-2 border border-[#1800ad] text-[#1800ad] text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-gray-50 transition-all cursor-pointer active:scale-95"
           >
             {t.login}
           </button>
 
-          <button 
+          <button
             onClick={() => onNavigateToAuth('register')}
             className="hidden lg:inline-flex px-5 py-2 bg-[#1800ad] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-black transition-all shadow-md cursor-pointer active:scale-95 whitespace-nowrap"
           >
@@ -319,7 +319,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
           </button>
 
           {/* Navigation Menu Toggle Button - ONLY shown on mobile/tablet (lg:hidden) */}
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors active:scale-90 shadow-sm cursor-pointer"
             title="Menu"
@@ -339,37 +339,37 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               className="lg:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-xl py-6 px-6 md:px-20 z-50 flex flex-col gap-6 text-left"
             >
               <div className="flex flex-col gap-1.5 font-bold uppercase text-xs tracking-widest text-gray-500">
-                <button 
-                  onClick={() => { scrollToSection('landing-hero'); setIsMobileMenuOpen(false); }} 
+                <button
+                  onClick={() => { scrollToSection('landing-hero'); setIsMobileMenuOpen(false); }}
                   className="hover:text-[#1800ad] hover:translate-x-1 transition-all py-3.5 text-left bg-transparent border-b border-gray-50 font-bold cursor-pointer"
                 >
                   Home
                 </button>
-                <button 
-                  onClick={() => { scrollToSection('landing-courses'); setIsMobileMenuOpen(false); }} 
+                <button
+                  onClick={() => { scrollToSection('landing-courses'); setIsMobileMenuOpen(false); }}
                   className="hover:text-[#1800ad] hover:translate-x-1 transition-all py-3.5 text-left bg-transparent border-b border-gray-50 font-bold cursor-pointer"
                 >
                   Courses
                 </button>
-                <button 
-                  onClick={() => { scrollToSection('landing-why'); setIsMobileMenuOpen(false); }} 
+                <button
+                  onClick={() => { scrollToSection('landing-why'); setIsMobileMenuOpen(false); }}
                   className="hover:text-[#1800ad] hover:translate-x-1 transition-all py-3.5 text-left bg-transparent border-b border-gray-50 font-bold cursor-pointer"
                 >
                   Features
                 </button>
-                <button 
-                  onClick={() => { scrollToSection('landing-testimonials'); setIsMobileMenuOpen(false); }} 
+                <button
+                  onClick={() => { scrollToSection('landing-testimonials'); setIsMobileMenuOpen(false); }}
                   className="hover:text-[#1800ad] hover:translate-x-1 transition-all py-3.5 text-left bg-transparent border-b border-gray-50 font-bold cursor-pointer"
                 >
                   Testimonials
                 </button>
-                <button 
-                  onClick={() => { scrollToSection('landing-faq'); setIsMobileMenuOpen(false); }} 
+                <button
+                  onClick={() => { scrollToSection('landing-faq'); setIsMobileMenuOpen(false); }}
                   className="hover:text-[#1800ad] hover:translate-x-1 transition-all py-3.5 text-left bg-transparent border-b border-gray-50 font-bold cursor-pointer"
                 >
                   FAQ
                 </button>
-                <button 
+                <button
                   onClick={() => setSelectedLanguage(selectedLanguage === 'id' ? 'en' : 'id')}
                   className="hover:text-[#1800ad] transition-colors py-3.5 text-left bg-transparent font-bold cursor-pointer flex items-center justify-between"
                 >
@@ -379,14 +379,14 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               </div>
 
               <div className="border-t border-gray-100 pt-5 flex flex-col sm:flex-row gap-3">
-                <button 
+                <button
                   onClick={() => { onNavigateToAuth('login'); setIsMobileMenuOpen(false); }}
                   className="flex-1 py-3.5 border border-[#1800ad] text-[#1800ad] text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-gray-50 transition-all text-center flex items-center justify-center cursor-pointer"
                 >
                   {t.login}
                 </button>
 
-                <button 
+                <button
                   onClick={() => { onNavigateToAuth('register'); setIsMobileMenuOpen(false); }}
                   className="flex-1 py-3.5 bg-[#1800ad] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-black transition-all shadow-md text-center flex items-center justify-center cursor-pointer"
                 >
@@ -400,14 +400,14 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
       {/* 2. THE DYNAMIC PREMISES HERO BILLBOARD (CLEAN UNTITLED UI STYLE) */}
       <header id="landing-hero" className="relative bg-white text-gray-900 py-10 md:py-24 px-4 md:px-10 lg:px-20 overflow-hidden border-b border-gray-100">
-        
+
         {/* Soft elegant glowing organic background blobs */}
         <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#1800ad]/5 rounded-full blur-[100px] pointer-events-none select-none"></div>
-        
+
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-14 relative z-10 text-left">
-          
+
           {/* Left Column Text & Action Area */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ type: 'spring', stiffness: 100, damping: 15 }}
@@ -421,8 +421,8 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 {selectedLanguage === 'id' ? 'Kuasai Teknologi Terdepan Besok, Mulai Belajar Hari Ini' : 'Master Tomorrow’s Leading Technology, Start Learning Today'}
               </h1>
               <p className="text-gray-650 text-xs sm:text-sm md:text-base leading-relaxed font-medium">
-                {selectedLanguage === 'id' 
-                  ? 'Belajar AI dari dasar hingga tingkat lanjut. Kursus interaktif, bimbingan langsung Tentor & JagoAI, dan pengerjaan projek nyata.' 
+                {selectedLanguage === 'id'
+                  ? 'Belajar AI dari dasar hingga tingkat lanjut. Kursus interaktif, bimbingan langsung Tentor & JagoAI, dan pengerjaan projek nyata.'
                   : 'Learn AI from scratch to advanced. Interactive courses, 1-on-1 mentorship with Telkom University experts, and real-world project portfolios.'}
               </p>
             </div>
@@ -453,7 +453,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
             {/* Premium action CTA */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <button 
+              <button
                 onClick={() => onNavigateToAuth('register')}
                 className="px-6 py-3.5 sm:px-8 sm:py-4 bg-[#1800ad] hover:bg-black text-white rounded-2xl font-bold text-[11px] sm:text-xs uppercase tracking-widest hover:shadow-xl active:scale-95 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
               >
@@ -464,7 +464,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
           </motion.div>
 
           {/* Right Column Student Hero Image Overlay */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -472,18 +472,18 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
           >
             {/* The main rounded image matching reference */}
             <div className="rounded-[24px] sm:rounded-[40px] overflow-hidden shadow-2xl border border-gray-100 relative aspect-[4/3] bg-gray-50">
-              <img 
-                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200" 
+              <img
+                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-102"
                 alt="AI Student Preview"
                 referrerPolicy="no-referrer"
               />
-              
+
               {/* Elegant floating preview plate overlay */}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 sm:p-6 md:p-8 flex flex-col justify-end text-left text-white">
                 <div className="flex items-center gap-3 sm:gap-4">
                   {/* Floating glassmorphism play button */}
-                  <button 
+                  <button
                     onClick={() => onNavigateToAuth('login')}
                     className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center hover:bg-white hover:text-black transition-all transform hover:scale-105 cursor-pointer shrink-0"
                   >
@@ -524,7 +524,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
       {/* 4. THE ULTIMATE KURSUS GRID (UDEMY ACCENT FLAVOR) */}
       <section id="landing-courses" className="max-w-7xl mx-auto py-20 px-4 md:px-10 lg:px-20 space-y-12">
-        
+
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3 text-left">
             <span className="text-[10px] font-bold text-[#1800ad] uppercase tracking-[0.25em] bg-[#1800ad]/5 px-3 py-1.5 rounded-full inline-block">
@@ -542,14 +542,13 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
         {/* Categories Tab selector (Glass pills) */}
         <div className="flex flex-wrap gap-1.5 sm:gap-2.5 pb-4 border-b border-gray-100">
           {uniqueCategories.map((cat) => (
-            <button 
+            <button
               key={cat}
               onClick={() => { setSelectedCategory(cat); }}
-              className={`px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-[9.5px] sm:text-[10.5px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${
-                selectedCategory === cat 
-                  ? 'bg-[#1800ad] text-white shadow-lg shadow-[#1800ad]/20 scale-102 font-bold' 
-                  : 'bg-white text-gray-500 border border-gray-200/60 hover:text-gray-900 hover:border-gray-300'
-              }`}
+              className={`px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-[9.5px] sm:text-[10.5px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${selectedCategory === cat
+                ? 'bg-[#1800ad] text-white shadow-lg shadow-[#1800ad]/20 scale-102 font-bold'
+                : 'bg-white text-gray-500 border border-gray-200/60 hover:text-gray-900 hover:border-gray-300'
+                }`}
             >
               {cat === 'all' || cat === 'Semua' ? (selectedLanguage === 'id' ? 'Semua Kursus' : 'All Courses') : cat}
             </button>
@@ -560,7 +559,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
         {filteredCourses.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 xs:gap-3 sm:gap-6">
             {filteredCourses.map((course) => (
-              <motion.div 
+              <motion.div
                 layout
                 key={course.id}
                 onClick={() => setSelectedCourseDetail(course)}
@@ -569,7 +568,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 {/* Course Image Wrapper */}
                 <div className="relative aspect-video overflow-hidden shrink-0 bg-gray-100">
                   <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
-                  
+
                   {/* Badge Row overlay */}
                   <div className="absolute top-1.5 left-1.5 xs:top-3 xs:left-3 flex flex-col gap-1 items-start">
                     {course.badge && (
@@ -581,10 +580,10 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
                   <div className="absolute bottom-1.5 right-1.5 xs:bottom-3 xs:right-3 bg-black/40 backdrop-blur-md text-white p-1 xs:p-2.5 rounded-md xs:rounded-xl border border-white/10">
                     <Symbol name={
-                      course.category === 'Vision' ? 'visibility' : 
-                      course.category === 'Robotics' ? 'precision_manufacturing' : 
-                      course.category === 'NLP' ? 'translate' : 
-                      course.category === 'Generative AI' ? 'auto_awesome' : 'auto_stories'
+                      course.category === 'Vision' ? 'visibility' :
+                        course.category === 'Robotics' ? 'precision_manufacturing' :
+                          course.category === 'NLP' ? 'translate' :
+                            course.category === 'Generative AI' ? 'auto_awesome' : 'auto_stories'
                     } className="text-[10px] xs:text-sm" />
                   </div>
                 </div>
@@ -601,7 +600,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       {course.title}
                     </h3>
                     <p className="text-[8px] xs:text-[10px] text-gray-400 font-medium line-clamp-1">{course.author}</p>
-                    
+
                     {/* Visual Key Skills Badges inside Course Card! (Hidden on mobile to save space) */}
                     <div className="hidden sm:flex flex-wrap gap-1 pt-1">
                       {course.skills.slice(0, 3).map((skill) => (
@@ -650,7 +649,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               <p className="text-sm font-bold text-gray-700">Tidak ada kursus yang cocok</p>
               <p className="text-xs text-gray-400 max-w-sm mx-auto">Kami tidak dapat menemukan pencarian Anda. Coba kata kunci yang lebih umum.</p>
             </div>
-            <button 
+            <button
               onClick={() => { setSearchTerm(''); setSelectedCategory('Semua'); }}
               className="text-xs font-black text-[#1800ad] uppercase tracking-wider hover:underline"
             >
@@ -689,7 +688,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
       {/* 6. WHY JAGOAI (TAILWIND BENTO GRID STYLE) */}
       <section id="landing-why" className="bg-[#f0f3f6] py-24 px-4 md:px-10 lg:px-20 border-b border-gray-100">
         <div className="max-w-7xl mx-auto space-y-16">
-          
+
           <div className="text-center space-y-3 max-w-xl mx-auto">
             <span className="text-[10px] font-bold text-[#1800ad] uppercase tracking-[0.25em] bg-[#1800ad]/5 px-3 py-1.5 rounded-full inline-block">
               {selectedLanguage === 'id' ? 'PRESTASI BELAJAR' : 'LEARNING PERFORMANCE'}
@@ -698,14 +697,14 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               {t.whyTitle}
             </h2>
             <p className="text-gray-500 text-xs md:text-sm font-medium">
-              {selectedLanguage === 'id' 
+              {selectedLanguage === 'id'
                 ? 'Fitur interaktif yang didesain khusus untuk melipatgandakan kecepatan belajar Anda.'
                 : 'Interactive traits engineered specifically to amplify your computational skill acquisition speeds.'}
             </p>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
-            
+
             {/* Box 1 */}
             <div className="bg-white p-3.5 xs:p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-gray-100/80 space-y-3 xs:space-y-6 shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 sm:hover:-translate-y-1.5 transition-all flex flex-col justify-between text-left duration-300">
               <div className="space-y-2 xs:space-y-4">
@@ -776,41 +775,39 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#1800ad]/1 rounded-full blur-[160px] pointer-events-none select-none"></div>
 
         <div className="max-w-7xl mx-auto space-y-16 relative z-10">
-          
+
           <div className="text-center space-y-3 max-w-2xl mx-auto">
             <span className="text-[10px] font-bold text-[#1800ad] uppercase tracking-[0.25em] bg-[#1800ad]/5 px-3.5 py-1.5 rounded-full inline-block">
               {selectedLanguage === 'id' ? 'Eksplorasi Platform Lebih Dalam' : 'Explore Platform Capabilities'}
             </span>
             <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 tracking-tight leading-snug">
-              {selectedLanguage === 'id' 
-                ? 'Satu Platform, Semua Kebutuhan Pembelajaran AI Anda' 
+              {selectedLanguage === 'id'
+                ? 'Satu Platform, Semua Kebutuhan Pembelajaran AI Anda'
                 : 'One Unified Platform for All Your AI Learning Milestones'}
             </h2>
             <p className="text-gray-500 text-xs md:text-sm font-medium">
-              {selectedLanguage === 'id' 
+              {selectedLanguage === 'id'
                 ? 'JagoAI School mengintegrasikan kurikulum industri dengan berbagai instrumen canggih untuk mempercepat pemahaman teknologi masa depan Anda.'
                 : 'JagoAI School fuses enterprise syllabus guides with high-utility learning accelerators to bootstrap your tomorrow.'}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
+
             {/* Left Column: Interactive Feature selector tabs */}
             <div className="lg:col-span-5 space-y-3 text-left">
-              
+
               {/* Tab 1: AI Sandbox */}
-              <button 
+              <button
                 onClick={() => setSelectedFeatureTab('sandbox')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${
-                  selectedFeatureTab === 'sandbox' 
-                    ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
-                }`}
+                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'sandbox'
+                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                  }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    selectedFeatureTab === 'sandbox' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'sandbox' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                    }`}>
                     <Symbol name="terminal" className="text-lg" />
                   </div>
                   <div className="space-y-1">
@@ -827,18 +824,16 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               </button>
 
               {/* Tab 2: Private Consultation */}
-              <button 
+              <button
                 onClick={() => setSelectedFeatureTab('consult')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${
-                  selectedFeatureTab === 'consult' 
-                    ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
-                }`}
+                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'consult'
+                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                  }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    selectedFeatureTab === 'consult' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'consult' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                    }`}>
                     <Symbol name="calendar_month" className="text-lg" />
                   </div>
                   <div className="space-y-1">
@@ -855,18 +850,16 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               </button>
 
               {/* Tab 3: Automated Quiz Feedbacks */}
-              <button 
+              <button
                 onClick={() => setSelectedFeatureTab('lms')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${
-                  selectedFeatureTab === 'lms' 
-                    ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
-                }`}
+                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'lms'
+                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                  }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    selectedFeatureTab === 'lms' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'lms' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                    }`}>
                     <Symbol name="auto_awesome" className="text-lg" />
                   </div>
                   <div className="space-y-1">
@@ -883,18 +876,16 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               </button>
 
               {/* Tab 4: Student guilds */}
-              <button 
+              <button
                 onClick={() => setSelectedFeatureTab('forums')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${
-                  selectedFeatureTab === 'forums' 
-                    ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm' 
-                    : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
-                }`}
+                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'forums'
+                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                  }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    selectedFeatureTab === 'forums' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'forums' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                    }`}>
                     <Symbol name="forum" className="text-lg" />
                   </div>
                   <div className="space-y-1">
@@ -912,13 +903,13 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
             </div>            {/* Right Column: High-Fidelity UI Live Previews Mockup (SaaS Dashboard Layout) */}
             <div className="lg:col-span-7 bg-white border border-slate-100 rounded-[24px] sm:rounded-[36px] p-4 sm:p-6 md:p-8 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.04)] relative overflow-hidden self-stretch flex items-center min-h-[380px] sm:min-h-[440px]">
-              
+
               {/* Dynamic Inner Simulated Renderings with clean crisp light styles */}
               <div className="w-full text-slate-800 font-sans text-left space-y-4">
-                
+
                 <AnimatePresence mode="wait">
                   {selectedFeatureTab === 'sandbox' && (
-                    <motion.div 
+                    <motion.div
                       key="preview-sandbox"
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -987,7 +978,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                   )}
 
                   {selectedFeatureTab === 'consult' && (
-                    <motion.div 
+                    <motion.div
                       key="preview-consult"
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -1002,7 +993,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
                       {/* Mock Interactive Mentor Card list */}
                       <div className="space-y-3">
-                        
+
                         {/* Mentor Row 1 */}
                         <div className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                           <div className="flex items-center gap-3">
@@ -1052,7 +1043,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                   )}
 
                   {selectedFeatureTab === 'lms' && (
-                    <motion.div 
+                    <motion.div
                       key="preview-lms"
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -1107,7 +1098,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                   )}
 
                   {selectedFeatureTab === 'forums' && (
-                    <motion.div 
+                    <motion.div
                       key="preview-forums"
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -1167,14 +1158,14 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               {selectedLanguage === 'id' ? 'Kisah Sukses Kreator Muda' : 'Real Stories from Young AI Pioneers'}
             </h3>
             <p className="text-xs text-gray-400 leading-relaxed">
-              {selectedLanguage === 'id' 
-                ? 'Siswa kami telah membuktikan bahwa usia muda bukanlah halangan untuk merintis model deep learning mumpuni di Indonesia.' 
+              {selectedLanguage === 'id'
+                ? 'Siswa kami telah membuktikan bahwa usia muda bukanlah halangan untuk merintis model deep learning mumpuni di Indonesia.'
                 : 'Our students have proven that school age is no limit to engineering high-functioning neural architectures.'}
             </p>
           </div>
-          
+
           <div className="md:col-span-2 grid grid-cols-2 gap-2 sm:gap-6 text-left">
-            
+
             <div className="border border-gray-100 p-3.5 xs:p-6 rounded-2xl sm:rounded-[24px] bg-gray-50 flex flex-col justify-between space-y-4 shadow-sm">
               <p className="text-[9.5px] sm:text-xs font-bold text-gray-600 italic leading-relaxed line-clamp-6 sm:line-clamp-none">
                 “Materi Generative AI sangat komplit. Saya bisa mengaitkan API model pembelajaran ke prototype program pemilah sampah sekolah. Ditambah konsultasi 1-on-1 dengan mentor JagoAI sangat seru!”
@@ -1214,7 +1205,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
           {/* Interactive Responsive Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            
+
             {/* Left side: Expandable FAQs */}
             <div className="lg:col-span-2 space-y-4">
               {[
@@ -1273,8 +1264,8 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 const answer = selectedLanguage === 'id' ? faq.aId : faq.aEn;
 
                 return (
-                  <div 
-                    key={faq.id} 
+                  <div
+                    key={faq.id}
                     className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300"
                   >
                     <button
@@ -1290,10 +1281,9 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       </div>
                     </button>
 
-                    <div 
-                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        isOpen ? 'max-h-[300px] border-t border-gray-100' : 'max-h-0'
-                      }`}
+                    <div
+                      className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[300px] border-t border-gray-100' : 'max-h-0'
+                        }`}
                     >
                       <div className="p-5 bg-slate-50/50">
                         <p className="text-xs text-slate-600 pl-7 leading-relaxed font-semibold">
@@ -1317,8 +1307,8 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                   {selectedLanguage === 'id' ? 'Butuh Bantuan Langsung?' : 'Need Instant Assistance?'}
                 </h3>
                 <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                  {selectedLanguage === 'id' 
-                    ? 'Ada kendala pendaftaran, pembayaran, atau kurikulum? Hubungi admin & tim penasihat JagoAI untuk bantuan cepat.' 
+                  {selectedLanguage === 'id'
+                    ? 'Ada kendala pendaftaran, pembayaran, atau kurikulum? Hubungi admin & tim penasihat JagoAI untuk bantuan cepat.'
                     : 'Confused about sign ups, billing, or modular learning blocks? Reach out directly to friendly JagoAI support agents.'}
                 </p>
               </div>
@@ -1326,11 +1316,11 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               <div className="space-y-2.5 pt-1">
                 <div className="flex items-center gap-2.5 text-xs font-bold text-gray-700 bg-gray-50/50 p-3 rounded-xl border border-gray-100/70">
                   <Symbol name="email" className="text-[#1800ad] text-base" />
-                  <span>support@jagoai-school.com</span>
+                  <span>admin.jagoaischool@gmail.com</span>
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => onNavigateToAuth('register')}
                 className="w-full py-3 bg-[#1800ad] hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 group cursor-pointer transition-all duration-200"
               >
@@ -1347,9 +1337,9 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
       {/* 9. HIGHLY CONVERSATIONAL FOOTER (UDEMY FOOTER ACCENTS) */}
       <footer className="bg-gray-900 text-gray-400 py-12 md:py-16 px-4 md:px-10 lg:px-20 text-left shrink-0">
         <div className="max-w-7xl mx-auto space-y-10">
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            
+
             <div className="space-y-4 text-left">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
@@ -1371,28 +1361,28 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
             <div className="space-y-3 font-medium text-xs text-left">
               <p className="text-[10px] font-bold uppercase text-white tracking-widest">{selectedLanguage === 'id' ? 'EKSPLORASI' : 'EXPLORE'}</p>
               <ul className="space-y-2">
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Python & Machine Learning</span></li>
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Generative AI Hub</span></li>
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Robotics & Vision</span></li>
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">UTBK / SNBT Sains Data</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Python & Machine Learning</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Generative AI Hub</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Robotics & Vision</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">UTBK / SNBT Sains Data</span></li>
               </ul>
             </div>
 
             <div className="space-y-3 font-medium text-xs text-left">
               <p className="text-[10px] font-bold uppercase text-white tracking-widest">{selectedLanguage === 'id' ? 'LAYANAN' : 'SERVICES'}</p>
               <ul className="space-y-2">
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">{t.why1Title}</span></li>
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">JagoAI Business</span></li>
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">{selectedLanguage === 'id' ? 'Sertifikasi Kompetensi AI' : 'AI Competency Certification'}</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">{t.why1Title}</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">JagoAI Business</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">{selectedLanguage === 'id' ? 'Sertifikasi Kompetensi AI' : 'AI Competency Certification'}</span></li>
               </ul>
             </div>
 
             <div className="space-y-3 font-medium text-xs text-left">
               <p className="text-[10px] font-bold uppercase text-white tracking-widest">{selectedLanguage === 'id' ? 'TENTANG KAMI' : 'ABOUT US'}</p>
               <ul className="space-y-2">
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Hubungi JagoAI</span></li>
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Pernyataan Privasi</span></li>
-                 <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Syarat & Ketentuan</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Hubungi JagoAI</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Pernyataan Privasi</span></li>
+                <li><span onClick={() => onNavigateToAuth('login')} className="hover:text-[#e8ba00] cursor-pointer transition-colors block">Syarat & Ketentuan</span></li>
               </ul>
             </div>
 
@@ -1410,16 +1400,16 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
         {selectedCourseDetail && (
           <div className="fixed inset-0 z-[1100] flex justify-end">
             {/* Backdrop shadow */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedCourseDetail(null)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-            
+
             {/* Modal Drawer */}
-            <motion.div 
+            <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
@@ -1427,13 +1417,13 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               className="relative w-full max-w-md bg-white h-full shadow-2xl p-8 flex flex-col justify-between overflow-y-auto text-left"
             >
               <div className="space-y-6">
-                
+
                 {/* Close row */}
                 <div className="flex items-center justify-between">
                   <span className="px-3 py-1 bg-amber-100 text-amber-800 text-[10px] font-black uppercase tracking-widest rounded-md">
                     {selectedCourseDetail.category}
                   </span>
-                  <button 
+                  <button
                     onClick={() => setSelectedCourseDetail(null)}
                     className="w-10 h-10 bg-gray-50 hover:bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 hover:text-black transition-all"
                   >
@@ -1491,7 +1481,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
               {/* Bottom instant Enroll CTA */}
               <div className="pt-6 border-t border-gray-100 space-y-3">
-                <button 
+                <button
                   onClick={() => { setSelectedCourseDetail(null); onNavigateToAuth('register'); }}
                   className="w-full py-4.5 bg-[#1800ad] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-lg shadow-[#1800ad]/10 flex items-center justify-center gap-2 cursor-pointer"
                 >

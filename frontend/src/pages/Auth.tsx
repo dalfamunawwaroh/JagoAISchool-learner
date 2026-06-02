@@ -6,15 +6,21 @@ import { authService, setToken } from '../services/api';
 interface AuthProps {
   onLogin: (user: any) => void;
   onBackToLanding?: () => void;
-  initialMode?: 'login' | 'register';
+  initialMode?: 'login' | 'register' | 'forgot' | 'reset';
 }
 
 export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthProps) => {
-  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot'>(initialMode);
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot' | 'reset'>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Forgot password & reset states
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   // Login form states
   const [loginEmail, setLoginEmail] = useState('');
@@ -50,6 +56,7 @@ export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthPr
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     if (regPassword !== regConfirmPassword) {
       setErrorMessage('Konfirmasi password tidak cocok');
@@ -65,10 +72,73 @@ export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthPr
         password: regPassword
       });
       setToken(res.token);
-      alert('Registrasi Berhasil! Selamat datang di JagoAI School.');
-      onLogin(res.user);
+      setSuccessMessage('Registrasi Berhasil! Selamat datang di JagoAI School.');
+      setTimeout(() => {
+        onLogin(res.user);
+      }, 2000);
     } catch (err: any) {
       setErrorMessage(err.message || 'Gagal mendaftar. Silakan coba kembali.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      const res = await authService.forgotPassword(forgotEmail);
+      setSuccessMessage(res.message || 'Link reset password telah dikirim ke email Anda.');
+      setForgotEmail('');
+      setTimeout(() => {
+        setAuthMode('login');
+        setSuccessMessage(null);
+      }, 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Gagal mengajukan reset password. Periksa kembali email Anda.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (newPassword !== confirmNewPassword) {
+      setErrorMessage('Konfirmasi password baru tidak cocok');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
+      setErrorMessage('Token reset password tidak ditemukan di URL. Silakan ajukan kembali.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const res = await authService.resetPassword({ token, newPassword });
+      setSuccessMessage(res.message || 'Kata sandi Anda telah berhasil diubah! Silakan masuk.');
+      
+      // Clean query parameters to prevent re-submitting with expired token
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      setTimeout(() => {
+        setAuthMode('login');
+        setSuccessMessage(null);
+        setNewPassword('');
+        setConfirmNewPassword('');
+      }, 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Gagal mengubah kata sandi. Token mungkin sudah kedaluwarsa.');
     } finally {
       setIsSubmitting(false);
     }
@@ -214,7 +284,7 @@ export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthPr
         <div className="w-full max-w-xl space-y-10 relative z-10 p-2 sm:p-6 md:p-10">
           
           {/* Toggle Pills */}
-          {authMode !== 'forgot' && (
+          {!['forgot', 'reset'].includes(authMode) && (
             <div className="flex justify-center">
               <div className="bg-slate-100/80 border border-slate-200/30 p-1.5 rounded-full flex relative w-64 shadow-inner">
                 <motion.div 
@@ -239,13 +309,44 @@ export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthPr
             </div>
           )}
 
-          {/* Inline Error Message */}
-          {errorMessage && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl text-left text-xs font-semibold text-red-650 text-red-650 flex items-center gap-3">
-              <Symbol name="warning" className="text-red-500 text-lg" fill />
-              <span>{errorMessage}</span>
-            </div>
-          )}
+          {/* Rich Notification System */}
+          <AnimatePresence>
+            {errorMessage && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                className="bg-red-50 border border-red-100/80 p-5 rounded-2xl text-left text-xs font-semibold text-red-650 flex items-start gap-4 shadow-lg shadow-red-500/5 backdrop-blur-md relative overflow-hidden transition-all duration-300"
+              >
+                <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-red-500 to-rose-600"></div>
+                <div className="p-2 rounded-xl bg-red-100/50 text-red-600 shrink-0">
+                  <Symbol name="error" className="text-xl text-red-650 fill-1" fill />
+                </div>
+                <div className="space-y-1 py-0.5">
+                  <h4 className="font-display font-black text-[10px] uppercase tracking-widest text-red-700">Aktivitas Gagal</h4>
+                  <p className="font-medium text-xs leading-relaxed text-red-600/90">{errorMessage}</p>
+                </div>
+              </motion.div>
+            )}
+
+            {successMessage && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                className="bg-emerald-50 border border-emerald-100/80 p-5 rounded-2xl text-left text-xs font-semibold text-emerald-650 flex items-start gap-4 shadow-lg shadow-emerald-500/5 backdrop-blur-md relative overflow-hidden transition-all duration-300"
+              >
+                <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-emerald-500 to-teal-600"></div>
+                <div className="p-2 rounded-xl bg-emerald-100/50 text-emerald-600 shrink-0">
+                  <Symbol name="verified" className="text-xl text-emerald-650 fill-1" fill />
+                </div>
+                <div className="space-y-1 py-0.5">
+                  <h4 className="font-display font-black text-[10px] uppercase tracking-widest text-emerald-750">Aktivitas Berhasil</h4>
+                  <p className="font-medium text-xs leading-relaxed text-emerald-600/90">{successMessage}</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence mode="wait">
             {authMode === 'login' ? (
@@ -441,7 +542,7 @@ export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthPr
                   </button>
                 </form>
               </motion.div>
-            ) : (
+            ) : authMode === 'forgot' ? (
               <motion.div 
                 key="forgot"
                 initial={{ opacity: 0, y: 15 }}
@@ -455,15 +556,17 @@ export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthPr
                   <p className="text-slate-400 text-sm font-medium">Masukkan email Anda untuk instruksi reset.</p>
                 </div>
 
-                <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); alert('Link reset password telah dikirim.'); setAuthMode('login'); }}>
+                <form className="space-y-5" onSubmit={handleForgotSubmit}>
                   <div className="space-y-2 text-left">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
                     <div className="relative group">
-                      <Symbol name="alternate_email" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-355 group-focus-within:text-[#1800ad] transition-colors" />
+                      <Symbol name="alternate_email" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#1800ad] transition-colors" />
                       <input 
                         type="email" 
                         placeholder="scholar@university.ac.id" 
                         required
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
                         className="w-full pl-12 pr-5 py-4 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-100 hover:border-slate-200/80 focus:border-[#1800ad] rounded-2xl focus:ring-4 focus:ring-[#1800ad]/8 transition-all outline-none text-sm text-slate-800 placeholder:text-slate-300 shadow-inner"
                       />
                     </div>
@@ -471,9 +574,86 @@ export const Auth = ({ onLogin, onBackToLanding, initialMode = 'login' }: AuthPr
 
                   <button 
                     type="submit"
-                    className="w-full py-4.5 bg-gradient-to-r from-[#1800ad] to-[#3a20e2] text-white rounded-2xl font-bold text-sm tracking-widest uppercase shadow-xl shadow-[#1800ad]/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full py-4.5 bg-gradient-to-r from-[#1800ad] to-[#3a20e2] text-white rounded-2xl font-bold text-sm tracking-widest uppercase shadow-xl shadow-[#1800ad]/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
                   >
-                    Kirim Link Reset
+                    {isSubmitting ? 'MENGIRIM...' : 'Kirim Link Reset'}
+                  </button>
+
+                  <button 
+                    type="button" 
+                    onClick={() => { setAuthMode('login'); setErrorMessage(null); }}
+                    className="w-full text-center text-[10px] font-black text-[#1800ad] hover:text-[#3a20e2] uppercase tracking-widest transition-colors cursor-pointer"
+                  >
+                    Kembali ke Login
+                  </button>
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="reset"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-display font-black text-slate-800 tracking-tight">Atur Ulang Sandi</h2>
+                  <p className="text-slate-400 text-sm font-medium">Buat kata sandi baru untuk mengamankan akun Anda.</p>
+                </div>
+
+                <form className="space-y-5" onSubmit={handleResetSubmit}>
+                  <div className="space-y-2 text-left">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Kata Sandi Baru</label>
+                    <div className="relative group">
+                      <Symbol name="lock" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#1800ad] transition-colors" />
+                      <input 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="••••••••••••" 
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        className="w-full pl-12 pr-12 py-4 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-100 hover:border-slate-200/80 focus:border-[#1800ad] rounded-2xl focus:ring-4 focus:ring-[#1800ad]/8 transition-all outline-none text-sm text-slate-800 placeholder:text-slate-300 shadow-inner"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                      >
+                        <Symbol name={showPassword ? "visibility_off" : "visibility"} className="text-lg" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-left">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Konfirmasi Kata Sandi Baru</label>
+                    <div className="relative group">
+                      <Symbol name="lock" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#1800ad] transition-colors" />
+                      <input 
+                        type={showConfirmPassword ? "text" : "password"} 
+                        placeholder="••••••••••••" 
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        required
+                        className="w-full pl-12 pr-12 py-4 bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-100 hover:border-slate-200/80 focus:border-[#1800ad] rounded-2xl focus:ring-4 focus:ring-[#1800ad]/8 transition-all outline-none text-sm text-slate-800 placeholder:text-slate-300 shadow-inner"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                      >
+                        <Symbol name={showConfirmPassword ? "visibility_off" : "visibility"} className="text-lg" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-4.5 bg-gradient-to-r from-[#1800ad] to-[#3a20e2] text-white rounded-2xl font-bold text-sm tracking-widest uppercase shadow-xl shadow-[#1800ad]/15 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'MENYIMPAN...' : 'SIMPAN SANDI BARU'}
                   </button>
 
                   <button 

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 import { pool } from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
 const router = Router();
@@ -181,6 +182,112 @@ router.put('/settings', authenticateToken, async (req, res) => {
     catch (error) {
         console.error('Update settings error:', error);
         res.status(500).json({ error: 'Server error updating settings' });
+    }
+});
+// 6. FORGOT PASSWORD - Send Reset Email
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+    try {
+        const [users] = await pool.query('SELECT id, full_name FROM users WHERE email = ?', [email]);
+        if (users.length === 0) {
+            // For security, don't reveal if email exists. Say check email regardless.
+            return res.json({ message: 'Jika email terdaftar, link reset password telah dikirim.' });
+        }
+        const user = users[0];
+        // Generate reset token valid for 1 hour
+        const resetToken = jwt.sign({ id: user.id, purpose: 'reset-password' }, JWT_SECRET, { expiresIn: '1h' });
+        // Construct reset link
+        const resetLink = `http://localhost:3000/?mode=reset&token=${resetToken}`;
+        // Send email using nodemailer
+        const mailOptions = {
+            from: `"JagoAI School Support" <${process.env.SMTP_EMAIL || 'admin.jagoaischool@gmail.com'}>`,
+            to: email,
+            subject: '🔒 Reset Password Akun JagoAI School Anda',
+            html: `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #f8fafc; border-radius: 24px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1800ad; font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">JagoAI School</h1>
+            <p style="color: #e8ba00; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 5px 0 0 0;">The Academy of Tomorrow</p>
+          </div>
+          
+          <div style="background-color: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02); border: 1px solid #f1f5f9;">
+            <h2 style="color: #0f172a; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 20px;">Halo ${user.full_name},</h2>
+            
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 30px;">
+              Kami menerima permintaan untuk mengatur ulang kata sandi akun JagoAI School Anda. Silakan klik tombol di bawah ini untuk merestart kata sandi Anda. Link ini berlaku selama <strong>1 jam</strong>.
+            </p>
+            
+            <div style="text-align: center; margin-bottom: 35px;">
+              <a href="${resetLink}" style="background-color: #1800ad; color: #ffffff; padding: 16px 36px; border-radius: 16px; font-weight: 700; font-size: 14px; text-decoration: none; display: inline-block; box-shadow: 0 10px 20px rgba(24, 0, 173, 0.15); text-transform: uppercase; letter-spacing: 0.5px;">Reset Kata Sandi</a>
+            </div>
+            
+            <p style="color: #64748b; font-size: 12px; line-height: 1.6; margin-bottom: 0;">
+              Jika Anda tidak meminta pengaturan ulang ini, Anda dapat mengabaikan email ini dengan aman. Kata sandi Anda tidak akan berubah.
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; color: #94a3b8; font-size: 11px;">
+            <p>© 2026 JagoAI School. All rights reserved.</p>
+          </div>
+        </div>
+      `
+        };
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.SMTP_EMAIL || 'admin.jagoaischool@gmail.com',
+                pass: process.env.SMTP_PASSWORD || 'gcxx rlkf wngu uxsc'
+            }
+        });
+        await transporter.sendMail(mailOptions);
+        console.log(`Password reset email successfully sent to: ${email}`);
+        res.json({ message: 'Jika email terdaftar, link reset password telah dikirim.' });
+    }
+    catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ error: 'Gagal mengirim email reset password. Coba lagi nanti.' });
+    }
+});
+// 7. RESET PASSWORD - Process Token and Update password
+router.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+        return res.status(400).json({ error: 'Token and new password are required' });
+    }
+    try {
+        // Verify token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.purpose !== 'reset-password') {
+            return res.status(400).json({ error: 'Invalid token purpose' });
+        }
+        // Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const newHash = await bcrypt.hash(newPassword, salt);
+        // Update in database
+        const [result] = await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, decoded.id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        // Insert successful notification
+        await pool.query('INSERT INTO notifications (user_id, title_id, title_en, desc_id, desc_en, category) VALUES (?, ?, ?, ?, ?, ?)', [
+            decoded.id,
+            'Kata Sandi Diatur Ulang',
+            'Password Reset Successful',
+            'Kata sandi Anda telah berhasil diubah baru-baru ini.',
+            'Your password has been successfully updated recently.',
+            'system'
+        ]);
+        res.json({ message: 'Kata sandi berhasil diatur ulang. Silakan masuk menggunakan kata sandi baru Anda.' });
+    }
+    catch (error) {
+        console.error('Reset password error:', error);
+        if (error.name === 'TokenExpiredError') {
+            return res.status(400).json({ error: 'Link reset password telah kedaluwarsa. Silakan ajukan kembali.' });
+        }
+        res.status(400).json({ error: 'Token reset password tidak valid atau rusak.' });
     }
 });
 export default router;

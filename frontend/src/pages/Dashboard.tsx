@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Symbol } from '../components/ui/Symbol';
-import { courseService, articleService } from '../services/api';
+import { courseService, articleService, authService } from '../services/api';
 
 interface DashboardProps {
   currentUser: any;
@@ -23,12 +23,7 @@ export const Dashboard = ({
 }: DashboardProps) => {
   const [activeEnrollments, setActiveEnrollments] = useState<any[]>([]);
   const [latestArticles, setLatestArticles] = useState<any[]>([]);
-  const [leaderboard, setLeaderboard] = useState<any[]>([
-    { name: 'Rizky Hakim', pts: '18,200', user: false, rank: 1, avatar: 'rh', status: 'Elite Researcher', bio: 'Fokus pada Computer Vision & Neural Networks.' },
-    { name: 'Laras Putri', pts: '11,900', user: false, rank: 3, avatar: 'lp', status: 'Pro Learner', bio: 'Antusias dengan NLP and Large Language Models.' },
-    { name: 'Budi Susanto', pts: '10,500', user: false, rank: 4, avatar: 'bs', status: 'Advanced', bio: 'Spesialis implementasi AI di industri manufaktur.' },
-    { name: 'Siti Aminah', pts: '9,800', user: false, rank: 5, avatar: 'sa', status: 'Rising Star', bio: 'Siswa SMA yang berprestasi di bidang Matematika AI.' }
-  ]);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -38,6 +33,9 @@ export const Dashboard = ({
 
         const articles = await articleService.getArticles();
         setLatestArticles(articles.slice(0, 3));
+
+        const leaderboardData = await authService.getLeaderboard();
+        setLeaderboard(leaderboardData);
       } catch (error) {
         console.error('Failed to load dashboard statistics:', error);
       }
@@ -46,31 +44,44 @@ export const Dashboard = ({
   }, []);
 
   // Format active user for leaderboard presentation
-  const userXP = currentUser?.xp !== undefined ? currentUser.xp : 12450;
-  const userLevel = currentUser?.level !== undefined ? currentUser.level : 12;
+  const userXP = currentUser?.xp !== undefined ? currentUser.xp : 0;
+  const userLevel = currentUser?.level !== undefined ? currentUser.level : 1;
   const formattedUserXP = userXP.toLocaleString();
 
-  const fullLeaderboard = [
-    ...leaderboard.map(p => ({ ...p, user: false })),
-    {
-      name: `${currentUser?.fullName || 'Siswa JagoAI'} (You)`,
-      pts: formattedUserXP,
-      ptsRaw: userXP,
-      user: true,
-      avatar: 'alex',
-      status: `Level ${userLevel} - AI Explorer`,
-      bio: currentUser?.bio || 'Siswa berdedikasi di JagoAI Academy.'
-    }
-  ]
-  .sort((a, b) => {
-    const ptsA = typeof a.ptsRaw === 'number' ? a.ptsRaw : parseInt(a.pts.replace(/,/g, ''));
-    const ptsB = typeof b.ptsRaw === 'number' ? b.ptsRaw : parseInt(b.pts.replace(/,/g, ''));
-    return ptsB - ptsA;
-  })
-  .map((player, idx) => ({
-    ...player,
-    rank: idx + 1
-  }));
+  // If currentUser is not in the leaderboard list returned from the backend (e.g. they are ranked lower than top 10),
+  // we can append them to the local presentation to preserve the premium custom (You) feeling.
+  const hasUser = leaderboard.some(p => p.id === currentUser?.id);
+  const baseList = [...leaderboard];
+  if (!hasUser && currentUser) {
+    baseList.push({
+      id: currentUser.id,
+      full_name: currentUser.fullName,
+      username: currentUser.username,
+      xp: currentUser.xp,
+      level: currentUser.level,
+      avatar_url: currentUser.avatarUrl,
+      bio: currentUser.bio,
+      role: currentUser.role
+    });
+  }
+
+  const fullLeaderboard = baseList
+    .map(p => ({
+      id: p.id,
+      name: p.id === currentUser?.id ? `${p.full_name} (You)` : p.full_name,
+      pts: p.xp.toLocaleString(),
+      ptsRaw: p.xp,
+      user: p.id === currentUser?.id,
+      avatar: p.avatar_url || 'https://i.pravatar.cc/100',
+      status: p.role === 'TENTOR' ? 'Mentor' : `Level ${p.level} - Student`,
+      bio: p.bio || (language === 'id' ? 'Siswa berdedikasi di JagoAI Academy.' : 'Dedicated learner at JagoAI Academy.'),
+      username: p.username
+    }))
+    .sort((a, b) => b.ptsRaw - a.ptsRaw)
+    .map((player, idx) => ({
+      ...player,
+      rank: idx + 1
+    }));
 
   // Determine course to resume (latest active enrollment)
   const resumeCourse = activeEnrollments.find(e => e.status === 'active') || activeEnrollments[0];
@@ -227,13 +238,13 @@ export const Dashboard = ({
               {fullLeaderboard.slice(0, 5).map((player, i) => (
                 <div key={i} className="group relative">
                   <div 
-                    onClick={() => onViewProfile({ name: player.name, photo: player.user ? (currentUser?.avatarUrl || `https://i.pravatar.cc/100?u=${player.avatar}`) : `https://i.pravatar.cc/100?u=${player.avatar}`, username: player.user ? currentUser?.username : `@${player.avatar}`, bio: player.bio })}
+                    onClick={() => onViewProfile({ name: player.name, photo: player.avatar, username: player.user ? currentUser?.username : player.username, bio: player.bio })}
                     className={`flex items-center justify-between p-4 rounded-2xl transition-all border cursor-pointer ${player.user ? 'bg-[#e8ba00]/5 border-[#e8ba00] shadow-sm' : 'border-transparent hover:bg-gray-50'}`}
                   >
                     <div className="flex items-center gap-4">
                       <span className="text-xs font-bold text-gray-400 w-4 font-mono">{player.rank}</span>
                       <div className={`w-10 h-10 rounded-xl overflow-hidden border-2 bg-gray-50 ${player.user ? 'border-[#e8ba00]' : 'border-white'} shadow-sm`}>
-                         <img src={player.user ? (currentUser?.avatarUrl || `https://i.pravatar.cc/100?u=${player.avatar}`) : `https://i.pravatar.cc/100?u=${player.avatar}`} alt={player.name} className="w-full h-full object-cover" />
+                         <img src={player.avatar} alt={player.name} className="w-full h-full object-cover" />
                       </div>
                       <span className={`text-[12px] font-bold ${player.user ? 'text-[#1800ad]' : 'text-gray-600'} truncate max-w-[100px]`}>{player.name}</span>
                     </div>
@@ -244,7 +255,7 @@ export const Dashboard = ({
                   <div className="absolute right-full top-0 mr-4 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 p-5 opacity-0 group-hover:opacity-100 pointer-events-none transition-all -translate-x-2 group-hover:translate-x-0 z-[110]">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="w-12 h-12 rounded-xl overflow-hidden shadow-md">
-                        <img src={player.user ? (currentUser?.avatarUrl || `https://i.pravatar.cc/100?u=${player.avatar}`) : `https://i.pravatar.cc/100?u=${player.avatar}`} alt={player.name} className="w-full h-full object-cover" />
+                        <img src={player.avatar} alt={player.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="text-left">
                         <div className="text-xs font-bold text-[#1800ad]">{player.name}</div>

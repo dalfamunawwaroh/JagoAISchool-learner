@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Symbol } from '../components/ui/Symbol';
 import { motion, AnimatePresence } from 'motion/react';
-import { discussionService } from '../services/api';
+import { discussionService, authService } from '../services/api';
 
 interface ChatReaction {
   emoji: string;
@@ -53,6 +53,7 @@ export const Discussion = ({ onViewProfile, language }: { onViewProfile: (user: 
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [activeUsers, setActiveUsers] = useState<any[]>([]);
 
   // Form states for creating a thread
   const [newThreadTitle, setNewThreadTitle] = useState('');
@@ -70,7 +71,7 @@ export const Discussion = ({ onViewProfile, language }: { onViewProfile: (user: 
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Fetch Categories and Threads
+  // 1. Fetch Categories, Threads, and Active Users
   const loadHubData = async () => {
     setLoading(true);
     try {
@@ -79,6 +80,9 @@ export const Discussion = ({ onViewProfile, language }: { onViewProfile: (user: 
 
       const thrs = await discussionService.getThreads(activeCategory, searchQuery);
       setThreads(thrs);
+
+      const users = await authService.getActiveUsers();
+      setActiveUsers(users);
     } catch (err) {
       console.error('Error fetching hub data:', err);
     } finally {
@@ -410,14 +414,38 @@ export const Discussion = ({ onViewProfile, language }: { onViewProfile: (user: 
             <Symbol name="person_celebrate" className="text-lg text-[#1800ad] fill-1" /> Active Learners
           </h3>
           <div className="flex flex-wrap gap-2 md:gap-3">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(u => (
-              <div key={u} className="relative group cursor-pointer">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white shadow-sm overflow-hidden ring-1 ring-gray-100 group-hover:ring-[#1800ad] transition-all">
-                  <img src={`https://i.pravatar.cc/100?u=user${u}`} className="w-full h-full object-cover" />
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 border border-white rounded-full"></div>
-              </div>
-            ))}
+            {activeUsers.length > 0 ? (
+              activeUsers.map(user => {
+                // Determine if online (active in the last 15 minutes)
+                let isOnline = false;
+                if (user.last_active_at) {
+                  const lastActive = new Date(user.last_active_at).getTime();
+                  const diffMinutes = (Date.now() - lastActive) / 1000 / 60;
+                  isOnline = diffMinutes < 15;
+                }
+                return (
+                  <div 
+                    key={user.id} 
+                    onClick={() => onViewProfile({ name: user.full_name, photo: user.avatar_url, username: user.username, bio: user.bio })}
+                    className="relative group cursor-pointer"
+                  >
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white shadow-sm overflow-hidden ring-1 ring-gray-100 group-hover:ring-[#1800ad] transition-all">
+                      <img src={user.avatar_url || 'https://i.pravatar.cc/100'} className="w-full h-full object-cover" alt={user.full_name} />
+                    </div>
+                    {isOnline && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 border border-white rounded-full"></div>
+                    )}
+                    
+                    {/* Hover tooltip for name */}
+                    <div className="absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-[9px] font-black uppercase tracking-widest rounded shadow-xl z-50 whitespace-nowrap">
+                      {user.full_name}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-[10px] text-gray-400 font-bold">{language === 'id' ? 'Tidak ada pengguna aktif.' : 'No active users.'}</p>
+            )}
           </div>
         </div>
       </div>

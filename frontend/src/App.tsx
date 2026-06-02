@@ -89,6 +89,7 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         onToggleSidebar={() => setIsCollapsed(!isCollapsed)}
         language={language}
+        currentUser={currentUser}
       />
 
       <main className={`transition-all duration-300 ${isCollapsed ? 'lg:ml-[100px]' : 'lg:ml-[280px]'} ml-0 flex-1 h-screen flex flex-col relative overflow-hidden bg-[#f7f9fb]`}>
@@ -172,7 +173,7 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
 
 export default function App() {
   const [view, setView] = useState<'landing' | 'auth' | 'dashboard'>('landing');
-  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login');
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register' | 'forgot' | 'reset'>('login');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   
@@ -184,8 +185,20 @@ export default function App() {
   // Verify JWT session on launch
   useEffect(() => {
     const checkAuth = async () => {
-      const token = getToken();
-      if (token) {
+      // Check if URL parameters request password reset
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get('mode');
+      const token = params.get('token');
+      
+      if (mode === 'reset' && token) {
+        setAuthInitialMode('reset');
+        setView('auth');
+        setIsLoading(false);
+        return;
+      }
+
+      const tokenVal = getToken();
+      if (tokenVal) {
         try {
           const user = await authService.getMe();
           setCurrentUser(user);

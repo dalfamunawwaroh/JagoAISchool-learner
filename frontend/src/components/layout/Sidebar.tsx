@@ -12,6 +12,7 @@ interface SidebarProps {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   language: 'id' | 'en';
+  currentUser?: any;
 }
 
 interface SidebarItemProps {
@@ -71,7 +72,8 @@ export const Sidebar = ({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
   onToggleSidebar,
-  language
+  language,
+  currentUser
 }: SidebarProps & { onToggleSidebar: () => void }) => {
   const tabs = [
     { id: 'Home', label: language === 'id' ? 'Beranda' : 'Home', icon: 'home' },
@@ -184,7 +186,7 @@ export const Sidebar = ({
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="hidden lg:flex w-10 h-10 rounded-xl bg-[#f8f9fc] items-center justify-center hover:bg-gray-100 transition-all relative overflow-hidden"
             >
-              <img src="https://i.pravatar.cc/100?u=as" className="w-full h-full object-cover" alt="Profile" />
+              <img src={currentUser?.avatarUrl || "https://i.pravatar.cc/100?u=as"} className="w-full h-full object-cover" alt="Profile" />
             </button>
           ) : null}
           
@@ -194,13 +196,17 @@ export const Sidebar = ({
           >
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="w-8 h-8 rounded-lg overflow-hidden shadow-sm shrink-0">
-                <img src="https://i.pravatar.cc/100?u=alex" className="w-full h-full object-cover" alt="Profile" />
+                <img src={currentUser?.avatarUrl || "https://i.pravatar.cc/100?u=alex"} className="w-full h-full object-cover" alt="Profile" />
               </div>
               <div className="flex flex-col items-start text-left min-w-0 flex-1 pl-1">
-                <span className="text-[11px] font-bold text-[#1800ad] group-hover:text-black transition-colors line-clamp-1 w-full">Alex Sterling</span>
+                <span className="text-[11px] font-bold text-[#1800ad] group-hover:text-black transition-colors line-clamp-1 w-full">
+                  {currentUser?.fullName || 'Alex Sterling'}
+                </span>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="text-[8px] font-black text-[#94a3b8] uppercase tracking-widest leading-none">
-                    {language === 'id' ? 'Siswa' : 'Learner'}
+                    {currentUser?.role === 'TENTOR' 
+                      ? (language === 'id' ? 'Tentor' : 'Mentor')
+                      : (language === 'id' ? 'Siswa' : 'Learner')}
                   </span>
                 </div>
               </div>
