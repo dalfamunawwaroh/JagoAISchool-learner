@@ -135,6 +135,7 @@ router.get('/threads/:id/messages', authenticateToken, async (req, res) => {
             }
             return {
                 id: msg.id,
+                userId: msg.user_id,
                 user: msg.author_name,
                 avatar: msg.author_avatar,
                 role: msg.author_role,

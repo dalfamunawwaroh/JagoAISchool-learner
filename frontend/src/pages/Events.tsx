@@ -243,8 +243,8 @@ export const Events = () => {
             {registeredEvents.length > 0 ? (
               registeredEvents.map(reg => {
                 return (
-                  <div key={reg.id} className="bg-white p-3 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm transition-colors text-left">
-                    <div className="flex items-center gap-3 md:gap-6">
+                  <div key={reg.id} className="bg-white p-3 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm transition-colors text-left gap-4">
+                    <div className="flex items-center gap-3 md:gap-6 min-w-0">
                       <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl overflow-hidden shadow-sm shrink-0">
                         <img src={reg.image_url} className="w-full h-full object-cover" alt={reg.title} />
                       </div>
@@ -253,7 +253,7 @@ export const Events = () => {
                         <p className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase mt-0.5">{new Date(reg.event_date).toLocaleDateString()} • {reg.event_time}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 md:gap-3 bg-emerald-50 px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-emerald-100 whitespace-nowrap">
+                    <div className="flex items-center gap-1.5 md:gap-3 bg-emerald-50 px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-emerald-100 whitespace-nowrap shrink-0">
                       <Symbol name="mail" className="text-emerald-600 text-xs md:text-sm" />
                       <span className="text-[7px] md:text-[9px] font-black text-emerald-600 uppercase tracking-widest hidden sm:inline">Ticket Sent</span>
                       <span className="text-[7px] md:text-[9px] font-black text-emerald-600 uppercase tracking-widest sm:hidden">Email</span>

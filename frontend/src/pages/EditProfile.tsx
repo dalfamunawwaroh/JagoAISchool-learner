@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Symbol } from '../components/ui/Symbol';
 import { motion, AnimatePresence } from 'motion/react';
+import { authService } from '../services/api';
 
 interface EditProfileProps {
   currentUser: any;
@@ -116,25 +117,14 @@ export const EditProfile = ({ currentUser, setCurrentUser }: EditProfileProps) =
 
     setSaving(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          fullName,
-          username,
-          bio,
-          websiteUrl,
-          linkedinUrl,
-          avatarUrl,
-        }),
+      const data = await authService.updateProfile({
+        fullName,
+        username,
+        bio,
+        websiteUrl,
+        linkedinUrl,
+        avatarUrl,
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Gagal memperbarui profil.');
 
       setCurrentUser(data.user);
       alert('Profil JagoAI Anda berhasil diperbarui di database!');

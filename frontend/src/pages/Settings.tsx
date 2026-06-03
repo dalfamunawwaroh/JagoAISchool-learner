@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Symbol } from '../components/ui/Symbol';
 import { motion, AnimatePresence } from 'motion/react';
+import { authService } from '../services/api';
 
 interface SettingsProps {
   language: 'id' | 'en';
@@ -35,21 +36,106 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
   const [aiInterruptionLevel, setAiInterruptionLevel] = useState('balanced');
   const [aiTonePreference, setAiTonePreference] = useState('peer');
 
+  // State Manajemen Kata Sandi Visibility Toggles
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // State Sesi Perangkat Aktif
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+
+  const fetchSessions = async () => {
+    setLoadingSessions(true);
+    try {
+      const data = await authService.getSessions();
+      setSessions(data);
+    } catch (err) {
+      console.error('Failed to fetch device sessions:', err);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      setNotifications(currentUser.emailNotifications !== undefined ? Boolean(currentUser.emailNotifications) : true);
+      setIsProfilePublic(currentUser.allowPeerSearch !== undefined ? Boolean(currentUser.allowPeerSearch) : true);
+      setShowXpOnLeaderboard(currentUser.showXpOnLeaderboard !== undefined ? Boolean(currentUser.showXpOnLeaderboard) : true);
+      setTimezone(currentUser.timezone || 'GMT+7');
+      setIsCalendarSynced(currentUser.googleCalendarSync !== undefined ? Boolean(currentUser.googleCalendarSync) : false);
+    }
+  }, [currentUser]);
+
+  const handleToggleProfilePublic = async () => {
+    const nextVal = !isProfilePublic;
+    setIsProfilePublic(nextVal);
+    try {
+      const data = await authService.updateSettings({ allowPeerSearch: nextVal });
+      setCurrentUser(data.user);
+    } catch (err) {
+      console.error('Failed to save public profile settings:', err);
+    }
+  };
+
+  const handleToggleShowXp = async () => {
+    const nextVal = !showXpOnLeaderboard;
+    setShowXpOnLeaderboard(nextVal);
+    try {
+      const data = await authService.updateSettings({ showXpOnLeaderboard: nextVal });
+      setCurrentUser(data.user);
+    } catch (err) {
+      console.error('Failed to save XP leaderboard settings:', err);
+    }
+  };
+
+  const handleChangeTimezone = async (newTimezone: string) => {
+    setTimezone(newTimezone);
+    try {
+      const data = await authService.updateSettings({ timezone: newTimezone });
+      setCurrentUser(data.user);
+    } catch (err) {
+      console.error('Failed to save timezone settings:', err);
+    }
+  };
+
+  const handleToggleCalendarSync = async () => {
+    const nextVal = !isCalendarSynced;
+    setIsCalendarSynced(nextVal);
+    try {
+      const data = await authService.updateSettings({ googleCalendarSync: nextVal });
+      setCurrentUser(data.user);
+    } catch (err) {
+      console.error('Failed to save calendar sync settings:', err);
+    }
+  };
+
+  const handleRevokeSession = async (sessionId: number) => {
+    const confirmRevoke = window.confirm(
+      language === 'id' 
+        ? 'Apakah Anda yakin ingin mencabut sesi perangkat ini?' 
+        : 'Are you sure you want to revoke this device session?'
+    );
+    if (!confirmRevoke) return;
+
+    try {
+      await authService.revokeSession(sessionId);
+      setSessions(sessions.filter((s) => s.id !== sessionId));
+    } catch (err) {
+      console.error('Failed to revoke session:', err);
+    }
+  };
+
   const handleToggleNotifications = async () => {
     const nextVal = !notifications;
     setNotifications(nextVal);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ emailNotifications: nextVal })
-      });
-      const data = await response.json();
-      if (response.ok) setCurrentUser(data.user);
+      const data = await authService.updateSettings({ emailNotifications: nextVal });
+      setCurrentUser(data.user);
     } catch (err) {
       console.error('Failed to save email notification settings:', err);
     }
@@ -58,17 +144,8 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
   const handleChangeLanguage = async (lang: 'id' | 'en') => {
     setLanguage(lang);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ languagePreference: lang })
-      });
-      const data = await response.json();
-      if (response.ok) setCurrentUser(data.user);
+      const data = await authService.updateSettings({ languagePreference: lang });
+      setCurrentUser(data.user);
     } catch (err) {
       console.error('Failed to save language preferences:', err);
     }
@@ -87,18 +164,7 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
 
     setUpdatingPass(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ currentPassword, newPassword })
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || 'Password update failed');
+      const data = await authService.updateSettings({ currentPassword, newPassword });
 
       setCurrentPassword('');
       setNewPassword('');
@@ -230,41 +296,68 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-4">
                     {language === 'id' ? 'Kata Sandi Saat Ini' : 'Current Password'}
                   </label>
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-6 py-4.5 bg-[#f8f9fc] border border-transparent focus:border-gray-200 focus:bg-white rounded-2xl text-sm focus:ring-4 focus:ring-[#1800ad]/5 outline-none text-gray-900 font-sans font-semibold transition-all"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showCurrentPassword ? "text" : "password"}
+                      required
+                      placeholder="••••••••"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full pl-6 pr-14 py-4.5 bg-[#f8f9fc] border border-transparent focus:border-gray-200 focus:bg-white rounded-2xl text-sm focus:ring-4 focus:ring-[#1800ad]/5 outline-none text-gray-900 font-sans font-semibold transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1800ad] focus:outline-none cursor-pointer border-none bg-transparent flex items-center justify-center p-1"
+                    >
+                      <Symbol name={showCurrentPassword ? "visibility_off" : "visibility"} className="text-xl" />
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-4">
                       {language === 'id' ? 'Kata Sandi Baru' : 'New Password'}
                     </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full px-6 py-4.5 bg-[#f8f9fc] border border-transparent focus:border-gray-200 focus:bg-white rounded-2xl text-sm focus:ring-4 focus:ring-[#1800ad]/5 outline-none text-gray-900 font-sans font-semibold transition-all"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        required
+                        placeholder="••••••••"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full pl-6 pr-14 py-4.5 bg-[#f8f9fc] border border-transparent focus:border-gray-200 focus:bg-white rounded-2xl text-sm focus:ring-4 focus:ring-[#1800ad]/5 outline-none text-gray-900 font-sans font-semibold transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1800ad] focus:outline-none cursor-pointer border-none bg-transparent flex items-center justify-center p-1"
+                      >
+                        <Symbol name={showNewPassword ? "visibility_off" : "visibility"} className="text-xl" />
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-4">
                       {language === 'id' ? 'Konfirmasi Kata Sandi Baru' : 'Confirm New Password'}
                     </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full px-6 py-4.5 bg-[#f8f9fc] border border-transparent focus:border-gray-200 focus:bg-white rounded-2xl text-sm focus:ring-4 focus:ring-[#1800ad]/5 outline-none text-gray-900 font-sans font-semibold transition-all"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        placeholder="••••••••"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full pl-6 pr-14 py-4.5 bg-[#f8f9fc] border border-transparent focus:border-gray-200 focus:bg-white rounded-2xl text-sm focus:ring-4 focus:ring-[#1800ad]/5 outline-none text-gray-900 font-sans font-semibold transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1800ad] focus:outline-none cursor-pointer border-none bg-transparent flex items-center justify-center p-1"
+                      >
+                        <Symbol name={showConfirmPassword ? "visibility_off" : "visibility"} className="text-xl" />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -305,7 +398,7 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
               </div>
               <button
                 type="button"
-                onClick={() => setIsProfilePublic(!isProfilePublic)}
+                onClick={handleToggleProfilePublic}
                 className="w-14 h-8 rounded-full transition-all relative cursor-pointer border-none shrink-0"
                 style={{ backgroundColor: isProfilePublic ? '#1800ad' : '#cbd5e1' }}
               >
@@ -325,7 +418,7 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
               </div>
               <button
                 type="button"
-                onClick={() => setShowXpOnLeaderboard(!showXpOnLeaderboard)}
+                onClick={handleToggleShowXp}
                 className="w-14 h-8 rounded-full transition-all relative cursor-pointer border-none shrink-0"
                 style={{ backgroundColor: showXpOnLeaderboard ? '#1800ad' : '#cbd5e1' }}
               >
@@ -469,7 +562,7 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
               </div>
               <select
                 value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
+                onChange={(e) => handleChangeTimezone(e.target.value)}
                 className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-700 outline-none cursor-pointer"
               >
                 <option value="GMT+7">WIB - Asia/Jakarta (GMT+07:00)</option>
@@ -489,7 +582,7 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
               </div>
               <button
                 type="button"
-                onClick={() => setIsCalendarSynced(!isCalendarSynced)}
+                onClick={handleToggleCalendarSync}
                 className="w-14 h-8 rounded-full transition-all relative cursor-pointer border-none shrink-0"
                 style={{ backgroundColor: isCalendarSynced ? '#1800ad' : '#cbd5e1' }}
               >
@@ -511,36 +604,59 @@ export const Settings = ({ language, setLanguage, currentUser, setCurrentUser }:
           </div>
 
           <div className="space-y-3">
-            <div className="p-4 bg-gray-50 border border-gray-100/50 rounded-2xl flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="text-emerald-600 flex items-center"><Symbol name="laptop_windows" className="text-2xl" /></div>
-                <div className="text-left leading-tight">
-                  <span className="text-xs font-bold text-gray-800 block">Windows PC • Bandung, Indonesia</span>
-                  <span className="text-[10px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
-                    <span className="w-1 h-1 rounded-full bg-emerald-500 block"></span>
-                    {language === 'id' ? 'Perangkat Ini (Aktif)' : 'This Device (Active Now)'}
-                  </span>
-                </div>
+            {loadingSessions ? (
+              <div className="text-center py-6 text-sm text-gray-400 font-medium animate-pulse">
+                {language === 'id' ? 'Memuat sesi perangkat...' : 'Loading active sessions...'}
               </div>
-              <span className="text-[9px] font-mono bg-gray-200/60 px-2.5 py-1 rounded font-bold text-gray-400">Chrome</span>
-            </div>
+            ) : sessions.length === 0 ? (
+              <div className="text-center py-6 text-sm text-gray-400 font-medium">
+                {language === 'id' ? 'Tidak ada sesi aktif.' : 'No active sessions found.'}
+              </div>
+            ) : (
+              sessions.map((s) => {
+                const isLaptop = s.deviceName.toLowerCase().includes('laptop') || s.deviceName.toLowerCase().includes('pc') || s.deviceName.toLowerCase().includes('mac');
+                const iconName = isLaptop ? 'laptop_windows' : 'smartphone';
 
-            <div className="p-4 bg-gray-50 border border-gray-100/50 rounded-2xl flex items-center justify-between gap-4 opacity-75">
-              <div className="flex items-center gap-3">
-                <div className="text-gray-500 flex items-center"><Symbol name="smartphone" className="text-2xl" /></div>
-                <div className="text-left leading-tight">
-                  <span className="text-xs font-bold text-gray-800 block">iPhone 15 Pro • Jakarta, Indonesia</span>
-                  <span className="text-[10px] text-gray-400 block mt-1">Logged in: 2 days ago</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => alert('Sesi perangkat lain berhasil dihentikan.')}
-                className="px-3 py-1.5 bg-white border border-gray-200 hover:bg-red-50 hover:text-red-500 hover:border-red-100 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 transition-colors cursor-pointer shrink-0"
-              >
-                Revoke
-              </button>
-            </div>
+                return (
+                  <div 
+                    key={s.id} 
+                    className={`p-4 bg-gray-50 border border-gray-100/50 rounded-2xl flex items-center justify-between gap-4 transition-all ${!s.isCurrent ? 'opacity-75 animate-in fade-in duration-200' : ''}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={s.isCurrent ? 'text-emerald-600 flex items-center' : 'text-gray-500 flex items-center'}>
+                        <Symbol name={iconName} className="text-2xl" />
+                      </div>
+                      <div className="text-left leading-tight">
+                        <span className="text-xs font-bold text-gray-800 block">{s.deviceName}</span>
+                        {s.isCurrent ? (
+                          <span className="text-[10px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-emerald-500 block"></span>
+                            {language === 'id' ? 'Perangkat Ini (Aktif)' : 'This Device (Active Now)'}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-gray-400 block mt-1">
+                            {language === 'id' ? 'Terakhir aktif: ' : 'Last active: '}
+                            {new Date(s.lastActiveAt).toLocaleString(language === 'id' ? 'id-ID' : 'en-US')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-[9px] font-mono bg-gray-200/60 px-2.5 py-1 rounded font-bold text-gray-400">{s.browser}</span>
+                      {!s.isCurrent && (
+                        <button
+                          type="button"
+                          onClick={() => handleRevokeSession(s.id)}
+                          className="px-3 py-1.5 bg-white border border-gray-200 hover:bg-red-50 hover:text-red-500 hover:border-red-100 rounded-xl text-[9px] font-black uppercase tracking-wider text-gray-500 transition-colors cursor-pointer shrink-0"
+                        >
+                          Revoke
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 

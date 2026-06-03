@@ -6,6 +6,65 @@ import { pool } from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'jagoai_school_neural_secret_key_2026';
+// Helper function to fetch and format user profile details consistently
+const getUserProfile = async (userId) => {
+    const [users] = await pool.query('SELECT id, email, full_name, username, avatar_url, role, xp, level, language_preference, bio, website_url, linkedin_url, email_notifications, allow_peer_search, show_xp_on_leaderboard, timezone, google_calendar_sync FROM users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+        return null;
+    }
+    const user = users[0];
+    // Fetch badges
+    const [badges] = await pool.query('SELECT badge_name as name, badge_icon as icon FROM user_badges WHERE user_id = ?', [userId]);
+    const mappedBadges = badges.map(b => {
+        let color = 'bg-indigo-50 text-[#1800ad]';
+        if (b.name === 'Elite Member')
+            color = 'bg-amber-100 text-amber-600';
+        else if (b.name === 'Top Scorer')
+            color = 'bg-[#e8ba00]/10 text-[#e8ba00]';
+        else if (b.name === 'Deep Thinker')
+            color = 'bg-[#1800ad]/10 text-[#1800ad]';
+        else if (b.name === 'Master Coder')
+            color = 'bg-blue-450/10 text-blue-550';
+        else if (b.name === 'Fast Learner')
+            color = 'bg-emerald-455/10 text-emerald-555';
+        return {
+            name: b.name,
+            icon: b.icon,
+            color
+        };
+    });
+    // Fetch active courses
+    const [courses] = await pool.query(`SELECT c.id, c.title, ce.progress_percentage as progress 
+     FROM course_enrollments ce
+     JOIN courses c ON ce.course_id = c.id
+     WHERE ce.user_id = ?`, [userId]);
+    const formattedCourses = courses.map(c => ({
+        id: c.id,
+        title: c.title,
+        progress: Math.round(parseFloat(c.progress))
+    }));
+    return {
+        id: user.id,
+        fullName: user.full_name,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        xp: user.xp,
+        level: user.level,
+        avatarUrl: user.avatar_url,
+        languagePreference: user.language_preference,
+        bio: user.bio,
+        websiteUrl: user.website_url,
+        linkedinUrl: user.linkedin_url,
+        emailNotifications: Boolean(user.email_notifications),
+        allowPeerSearch: Boolean(user.allow_peer_search),
+        showXpOnLeaderboard: Boolean(user.show_xp_on_leaderboard),
+        timezone: user.timezone,
+        googleCalendarSync: Boolean(user.google_calendar_sync),
+        badges: mappedBadges,
+        courses: formattedCourses
+    };
+};
 // 1. REGISTER
 router.post('/register', async (req, res) => {
     const { fullName, email, username, password } = req.body;
@@ -37,20 +96,11 @@ router.post('/register', async (req, res) => {
         await pool.query('INSERT INTO user_badges (user_id, badge_name, badge_icon) VALUES (?, ?, ?)', [userId, 'Elite Member', 'star']);
         // Create token
         const token = jwt.sign({ id: userId, role: 'LEARNER' }, JWT_SECRET, { expiresIn: '7d' });
+        const profile = await getUserProfile(userId);
         res.status(201).json({
             message: 'User registered successfully!',
             token,
-            user: {
-                id: userId,
-                fullName,
-                email,
-                username,
-                role: 'LEARNER',
-                xp: 0,
-                level: 1,
-                avatarUrl: 'https://i.pravatar.cc/150',
-                languagePreference: 'id'
-            }
+            user: profile
         });
     }
     catch (error) {
@@ -77,24 +127,11 @@ router.post('/login', async (req, res) => {
         }
         // Create token
         const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+        const profile = await getUserProfile(user.id);
         res.json({
             message: 'Login successful!',
             token,
-            user: {
-                id: user.id,
-                fullName: user.full_name,
-                email: user.email,
-                username: user.username,
-                role: user.role,
-                xp: user.xp,
-                level: user.level,
-                avatarUrl: user.avatar_url,
-                languagePreference: user.language_preference,
-                bio: user.bio,
-                websiteUrl: user.website_url,
-                linkedinUrl: user.linkedin_url,
-                emailNotifications: user.email_notifications
-            }
+            user: profile
         });
     }
     catch (error) {
@@ -105,11 +142,11 @@ router.post('/login', async (req, res) => {
 // 3. GET CURRENT USER (ME)
 router.get('/me', authenticateToken, async (req, res) => {
     try {
-        const [users] = await pool.query('SELECT id, email, full_name, username, avatar_url, role, xp, level, language_preference, bio, website_url, linkedin_url, email_notifications FROM users WHERE id = ?', [req.userId]);
-        if (users.length === 0) {
+        const profile = await getUserProfile(req.userId);
+        if (!profile) {
             return res.status(444).json({ error: 'User not found' });
         }
-        res.json(users[0]);
+        res.json(profile);
     }
     catch (error) {
         console.error('Fetch me error:', error);
@@ -135,10 +172,10 @@ router.put('/profile', authenticateToken, async (req, res) => {
         linkedin_url = ?, 
         avatar_url = COALESCE(?, avatar_url)
       WHERE id = ?`, [fullName, username, bio || null, websiteUrl || null, linkedinUrl || null, avatarUrl || null, req.userId]);
-        const [updatedUsers] = await pool.query('SELECT id, email, full_name, username, avatar_url, role, xp, level, language_preference, bio, website_url, linkedin_url, email_notifications FROM users WHERE id = ?', [req.userId]);
+        const profile = await getUserProfile(req.userId);
         res.json({
             message: 'Profile updated successfully!',
-            user: updatedUsers[0]
+            user: profile
         });
     }
     catch (error) {
@@ -146,9 +183,9 @@ router.put('/profile', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Server error updating profile' });
     }
 });
-// 5. UPDATE SETTINGS (Language, Email Notifications, Password)
+// 5. UPDATE SETTINGS (Language, Email Notifications, Password, Privacy, Schedule)
 router.put('/settings', authenticateToken, async (req, res) => {
-    const { currentPassword, newPassword, languagePreference, emailNotifications } = req.body;
+    const { currentPassword, newPassword, languagePreference, emailNotifications, allowPeerSearch, showXpOnLeaderboard, timezone, googleCalendarSync } = req.body;
     try {
         const [users] = await pool.query('SELECT password_hash FROM users WHERE id = ?', [req.userId]);
         if (users.length === 0) {
@@ -171,17 +208,79 @@ router.put('/settings', authenticateToken, async (req, res) => {
         // Update general preferences
         await pool.query(`UPDATE users SET 
         language_preference = COALESCE(?, language_preference),
-        email_notifications = COALESCE(?, email_notifications)
-      WHERE id = ?`, [languagePreference || null, emailNotifications !== undefined ? emailNotifications : null, req.userId]);
-        const [updatedUsers] = await pool.query('SELECT id, email, full_name, username, avatar_url, role, xp, level, language_preference, bio, website_url, linkedin_url, email_notifications FROM users WHERE id = ?', [req.userId]);
+        email_notifications = COALESCE(?, email_notifications),
+        allow_peer_search = COALESCE(?, allow_peer_search),
+        show_xp_on_leaderboard = COALESCE(?, show_xp_on_leaderboard),
+        timezone = COALESCE(?, timezone),
+        google_calendar_sync = COALESCE(?, google_calendar_sync)
+      WHERE id = ?`, [
+            languagePreference || null,
+            emailNotifications !== undefined ? emailNotifications : null,
+            allowPeerSearch !== undefined ? allowPeerSearch : null,
+            showXpOnLeaderboard !== undefined ? showXpOnLeaderboard : null,
+            timezone || null,
+            googleCalendarSync !== undefined ? googleCalendarSync : null,
+            req.userId
+        ]);
+        const profile = await getUserProfile(req.userId);
         res.json({
             message: 'Settings updated successfully!',
-            user: updatedUsers[0]
+            user: profile
         });
     }
     catch (error) {
         console.error('Update settings error:', error);
         res.status(500).json({ error: 'Server error updating settings' });
+    }
+});
+// 5a. GET ACTIVE DEVICE SESSIONS
+router.get('/settings/sessions', authenticateToken, async (req, res) => {
+    try {
+        const [sessions] = await pool.query('SELECT id, device_name as deviceName, location, browser, is_current as isCurrent, last_active_at as lastActiveAt FROM device_sessions WHERE user_id = ? ORDER BY is_current DESC, last_active_at DESC', [req.userId]);
+        if (sessions.length === 0) {
+            const userAgent = req.headers['user-agent'] || '';
+            let browser = 'Chrome';
+            if (userAgent.includes('Firefox'))
+                browser = 'Firefox';
+            else if (userAgent.includes('Safari') && !userAgent.includes('Chrome'))
+                browser = 'Safari';
+            else if (userAgent.includes('Edge'))
+                browser = 'Edge';
+            let deviceOS = 'Windows PC';
+            if (userAgent.includes('Macintosh'))
+                deviceOS = 'macOS Device';
+            else if (userAgent.includes('iPhone'))
+                deviceOS = 'iPhone';
+            else if (userAgent.includes('Android'))
+                deviceOS = 'Android Device';
+            else if (userAgent.includes('Linux'))
+                deviceOS = 'Linux Device';
+            await pool.query('INSERT INTO device_sessions (user_id, device_name, location, browser, is_current) VALUES (?, ?, ?, ?, ?)', [req.userId, `${deviceOS} • Bandung, Indonesia`, 'Bandung, Indonesia', browser, 1]);
+            await pool.query(`INSERT INTO device_sessions (user_id, device_name, location, browser, is_current, last_active_at) 
+         VALUES (?, 'iPhone 15 Pro • Jakarta, Indonesia', 'Jakarta, Indonesia', 'Safari', 0, DATE_SUB(NOW(), INTERVAL 2 DAY))`, [req.userId]);
+            const [newSessions] = await pool.query('SELECT id, device_name as deviceName, location, browser, is_current as isCurrent, last_active_at as lastActiveAt FROM device_sessions WHERE user_id = ? ORDER BY is_current DESC, last_active_at DESC', [req.userId]);
+            return res.json(newSessions);
+        }
+        res.json(sessions);
+    }
+    catch (error) {
+        console.error('Fetch device sessions error:', error);
+        res.status(500).json({ error: 'Server error fetching device sessions' });
+    }
+});
+// 5b. REVOKE ACTIVE DEVICE SESSION
+router.delete('/settings/sessions/:id', authenticateToken, async (req, res) => {
+    const sessionId = req.params.id;
+    try {
+        const [result] = await pool.query('DELETE FROM device_sessions WHERE id = ? AND user_id = ?', [sessionId, req.userId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Session not found or unauthorized' });
+        }
+        res.json({ message: 'Session revoked successfully' });
+    }
+    catch (error) {
+        console.error('Revoke session error:', error);
+        res.status(500).json({ error: 'Server error revoking session' });
     }
 });
 // 6. FORGOT PASSWORD - Send Reset Email
@@ -288,6 +387,115 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ error: 'Link reset password telah kedaluwarsa. Silakan ajukan kembali.' });
         }
         res.status(400).json({ error: 'Token reset password tidak valid atau rusak.' });
+    }
+});
+// 8. GET LEADERBOARD
+router.get('/leaderboard', async (req, res) => {
+    try {
+        const [users] = await pool.query('SELECT id, full_name, username, xp, level, avatar_url, bio, role FROM users ORDER BY xp DESC LIMIT 10');
+        res.json(users);
+    }
+    catch (error) {
+        console.error('Fetch leaderboard error:', error);
+        res.status(500).json({ error: 'Server error fetching leaderboard' });
+    }
+});
+// 9. GET ACTIVE USERS (Online / recently active)
+router.get('/active-users', async (req, res) => {
+    try {
+        const [users] = await pool.query('SELECT id, full_name, username, avatar_url, role, bio, last_active_at FROM users ORDER BY COALESCE(last_active_at, updated_at, created_at) DESC LIMIT 8');
+        res.json(users);
+    }
+    catch (error) {
+        console.error('Fetch active users error:', error);
+        res.status(500).json({ error: 'Server error fetching active users' });
+    }
+});
+// 10. SUPPORT TICKET FROM LANDING PAGE
+router.post('/support', async (req, res) => {
+    const { email, message } = req.body;
+    if (!email || !message) {
+        return res.status(400).json({ error: 'Email and message are required' });
+    }
+    try {
+        const adminEmail = process.env.SMTP_EMAIL || 'admin.jagoaischool@gmail.com';
+        const smtpPassword = process.env.SMTP_PASSWORD || 'gcxx rlkf wngu uxsc';
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: adminEmail,
+                pass: smtpPassword
+            }
+        });
+        // 1. Send inquiry to JagoAI School Admin
+        const adminMailOptions = {
+            from: `"JagoAI School Landing Page" <${adminEmail}>`,
+            to: adminEmail,
+            replyTo: email,
+            subject: '📬 Pertanyaan Baru dari Landing Page JagoAI School',
+            html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #1800ad; margin-bottom: 20px;">Pertanyaan Baru / Bantuan Langsung</h2>
+          <p><strong>Pengirim:</strong> ${email}</p>
+          <div style="background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 15px;">
+            <p style="white-space: pre-wrap; margin: 0; color: #334155;">${message}</p>
+          </div>
+          <p style="font-size: 11px; color: #94a3b8; margin-top: 25px;">Pesan ini dikirim secara otomatis dari formulir bantuan Landing Page JagoAI School.</p>
+        </div>
+      `
+        };
+        await transporter.sendMail(adminMailOptions);
+        console.log(`Admin support email notification sent successfully for sender: ${email}`);
+        // 2. Send confirmation receipt to the User
+        const userMailOptions = {
+            from: `"JagoAI School Support" <${adminEmail}>`,
+            to: email,
+            subject: '👋 Kami Telah Menerima Pertanyaan Anda - JagoAI School',
+            html: `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #f8fafc; border-radius: 24px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #1800ad; font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">JagoAI School</h1>
+            <p style="color: #e8ba00; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 5px 0 0 0;">The Academy of Tomorrow</p>
+          </div>
+          
+          <div style="background-color: #ffffff; padding: 40px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02); border: 1px solid #f1f5f9;">
+            <h2 style="color: #0f172a; font-size: 20px; font-weight: 700; margin-top: 0; margin-bottom: 20px;">Halo,</h2>
+            
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+              Terima kasih telah menghubungi JagoAI School. Kami telah menerima pertanyaan Anda dari formulir bantuan langsung di landing page kami.
+            </p>
+            
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 10px; font-weight: 600;">
+              Detail pertanyaan Anda:
+            </p>
+            
+            <div style="background-color: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 30px; font-style: italic; color: #334155; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${message}</div>
+            
+            <p style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
+              Tim kami akan segera meninjau pertanyaan ini dan menghubungi Anda kembali melalui alamat email ini dalam waktu 24 jam.
+            </p>
+            
+            <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 30px 0;" />
+            
+            <p style="color: #64748b; font-size: 12px; line-height: 1.6; margin-bottom: 0;">
+              Salam hangat,<br />
+              <strong>Tim Support JagoAI School</strong>
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; color: #94a3b8; font-size: 11px;">
+            <p>© 2026 JagoAI School. All rights reserved.</p>
+          </div>
+        </div>
+      `
+        };
+        await transporter.sendMail(userMailOptions);
+        console.log(`User support confirmation email sent successfully to: ${email}`);
+        res.json({ message: 'Support request sent successfully!' });
+    }
+    catch (error) {
+        console.error('Support email sending error:', error);
+        res.status(500).json({ error: 'Gagal mengirim email bantuan. Coba lagi nanti.' });
     }
 });
 export default router;

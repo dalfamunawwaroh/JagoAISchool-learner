@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Symbol } from '../components/ui/Symbol';
 import emailjs from '@emailjs/browser';
@@ -33,6 +33,53 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+
+  // State untuk video pratinjau landing page
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const [showLoginOffer, setShowLoginOffer] = useState(false);
+  const [playTime, setPlayTime] = useState(0);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (isPlayingVideo && !videoLoading) {
+      interval = setInterval(() => {
+        setPlayTime((prev) => {
+          if (prev >= 59) {
+            setIsPlayingVideo(false);
+            setShowLoginOffer(true);
+            if (videoRef.current) {
+              videoRef.current.pause();
+            }
+            return 60;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else {
+      if (interval) clearInterval(interval);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlayingVideo, videoLoading]);
+
+  useEffect(() => {
+    if (isPlayingVideo && videoRef.current) {
+      if (videoRef.current.readyState >= 2) {
+        setVideoLoading(false);
+      }
+      videoRef.current.play()
+        .then(() => {
+          setVideoLoading(false);
+        })
+        .catch((error) => {
+          console.warn("Video play failed:", error);
+          setVideoLoading(false);
+        });
+    }
+  }, [isPlayingVideo]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -404,6 +451,49 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
       {/* 2. THE DYNAMIC PREMISES HERO BILLBOARD (CLEAN UNTITLED UI STYLE) */}
       <header id="landing-hero" className="relative bg-white text-gray-900 py-10 md:py-24 px-4 md:px-10 lg:px-20 overflow-hidden border-b border-gray-100">
 
+        {/* Ambient Neural Network Glows & Grid Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-40 pointer-events-none select-none"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#1800ad]/10 rounded-full blur-[120px] pointer-events-none select-none"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#e8ba00]/10 rounded-full blur-[120px] pointer-events-none select-none"></div>
+
+        {/* Floating animated gradient mesh circles using framer motion */}
+        <motion.div
+          animate={{
+            y: [0, -15, 0],
+            x: [0, 10, 0]
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-12 left-10 w-4 h-4 rounded-full bg-[#1800ad]/30 blur-[2px] pointer-events-none"
+        />
+        <motion.div
+          animate={{
+            y: [0, 20, 0],
+            x: [0, -15, 0]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute bottom-20 right-1/3 w-6 h-6 rounded-full bg-[#e8ba00]/30 blur-[3px] pointer-events-none"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.3, 0.5, 0.3]
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-1/3 right-10 w-24 h-24 rounded-full bg-[#1800ad]/5 blur-md pointer-events-none"
+        />
+
         {/* Soft elegant glowing organic background blobs */}
         <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#1800ad]/5 rounded-full blur-[100px] pointer-events-none select-none"></div>
 
@@ -458,7 +548,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <button
                 onClick={() => onNavigateToAuth('register')}
-                className="px-6 py-3.5 sm:px-8 sm:py-4 bg-[#1800ad] hover:bg-black text-white rounded-2xl font-bold text-[11px] sm:text-xs uppercase tracking-widest hover:shadow-xl active:scale-95 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+                className="px-6 py-3.5 sm:px-8 sm:py-4 bg-gradient-to-r from-[#1800ad] to-[#0e0066] hover:from-black hover:to-slate-900 text-white rounded-2xl font-bold text-[11px] sm:text-xs uppercase tracking-widest hover:shadow-[0_10px_25px_rgba(24,0,173,0.3)] active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2 cursor-pointer border-none"
               >
                 <span>{selectedLanguage === 'id' ? 'Mulai Pembelajaran Sekarang' : 'Start Your Free Trial Now'}</span>
                 <Symbol name="arrow_forward" className="text-sm" />
@@ -473,227 +563,322 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex-1 w-full relative group"
           >
-            {/* The main rounded image matching reference */}
-            <div className="rounded-[24px] sm:rounded-[40px] overflow-hidden shadow-2xl border border-gray-100 relative aspect-[4/3] bg-gray-50">
-              <img
-                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-102"
-                alt="AI Student Preview"
-                referrerPolicy="no-referrer"
-              />
+            {/* The main rounded video/image container */}
+            <div className="rounded-[24px] sm:rounded-[40px] overflow-hidden shadow-2xl border border-slate-100 group-hover:border-[#1800ad]/30 group-hover:shadow-[0_20px_50px_rgba(24,0,173,0.15)] relative aspect-[4/3] bg-gray-50 transition-all duration-500">
+              {isPlayingVideo ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    onLoadStart={() => setVideoLoading(true)}
+                    onCanPlay={() => setVideoLoading(false)}
+                    onWaiting={() => setVideoLoading(true)}
+                    onPlaying={() => setVideoLoading(false)}
+                    onPlay={() => setVideoLoading(false)}
+                    onLoadedData={() => setVideoLoading(false)}
+                    onTimeUpdate={() => {
+                      if (videoRef.current && videoRef.current.currentTime > 0) {
+                        setVideoLoading(false);
+                      }
+                    }}
+                  >
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" type="video/mp4" />
+                  </video>
+                  {videoLoading && (
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center gap-3 z-10 animate-in fade-in duration-200">
+                      <div className="w-10 h-10 border-4 border-[#e8ba00] border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-[10px] font-bold text-white uppercase tracking-widest font-mono">
+                        {selectedLanguage === 'id' ? 'Memuat Pratinjau...' : 'Loading Preview...'}
+                      </span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <img
+                  src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-102"
+                  alt="AI Student Preview"
+                  referrerPolicy="no-referrer"
+                />
+              )}
 
               {/* Elegant floating preview plate overlay */}
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 sm:p-6 md:p-8 flex flex-col justify-end text-left text-white">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  {/* Floating glassmorphism play button */}
+              {!isPlayingVideo && !showLoginOffer && (
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-4 sm:p-6 md:p-8 flex flex-col justify-end text-left text-white z-10">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    {/* Floating glassmorphism play button */}
+                    <button
+                      onClick={() => { setIsPlayingVideo(true); setVideoLoading(true); setShowLoginOffer(false); setPlayTime(0); }}
+                      className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all transform hover:scale-105 cursor-pointer shrink-0"
+                    >
+                      <Symbol name="play_arrow" className="text-xl sm:text-2xl fill-1" />
+                    </button>
+                    <div className="space-y-0.5">
+                      <span className="text-[8px] sm:text-[9.5px] font-bold uppercase text-white/55 tracking-widest">{selectedLanguage === 'id' ? 'PRATINJAU KURSUS' : 'COURSE PREVIEW'}</span>
+                      <p className="text-[10px] sm:text-xs md:text-sm font-bold text-white line-clamp-1">
+                        {selectedLanguage === 'id' ? 'Materi Utama JagoAI School & Kurikulum Sains Data' : 'The Ultimate JagoAI School & Data Science Course'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Ribbon partners below */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 border-t border-white/10 pt-3 sm:pt-5 mt-3 sm:mt-5 text-center">
+                    <div className="space-y-0.5">
+                      <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-[#e8ba00] block">PROMPT</span>
+                      <span className="text-[6.5px] sm:text-[8px] uppercase tracking-widest text-white/50 block font-mono">{selectedLanguage === 'id' ? 'Terpopuler' : 'Popular'}</span>
+                    </div>
+                    <div className="space-y-0.5 border-x border-white/10">
+                      <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-white block">MACHINE</span>
+                      <span className="text-[6.5px] sm:text-[8px] uppercase tracking-widest text-white/50 block font-mono">{selectedLanguage === 'id' ? 'Kurikulum' : 'Syllabus'}</span>
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-rose-400 block">DATA SCI</span>
+                      <span className="text-[6.5px] sm:text-[8px] uppercase tracking-widest text-white/50 block font-mono">{selectedLanguage === 'id' ? 'Portofolio' : 'Portfolio'}</span>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* Video control overlay for active video */}
+              {isPlayingVideo && (
+                <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
+                  <div className="px-3 py-1 bg-black/60 backdrop-blur-sm border border-white/10 rounded-full text-white text-[9px] font-bold font-mono tracking-wider flex items-center gap-1.5 shadow-lg">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                    PREVIEW {60 - playTime}s
+                  </div>
                   <button
-                    onClick={() => onNavigateToAuth('login')}
-                    className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center hover:bg-white hover:text-black transition-all transform hover:scale-105 cursor-pointer shrink-0"
+                    onClick={() => { setIsPlayingVideo(false); setPlayTime(0); }}
+                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 text-white flex items-center justify-center hover:bg-black transition-all cursor-pointer border-none"
+                    title="Stop Preview"
                   >
-                    <Symbol name="play_arrow" className="text-xl sm:text-2xl fill-1" />
+                    <Symbol name="close" className="text-sm" />
                   </button>
-                  <div className="space-y-0.5">
-                    <span className="text-[8px] sm:text-[9.5px] font-bold uppercase text-white/55 tracking-widest">{selectedLanguage === 'id' ? 'PRATINJAU KURSUS' : 'COURSE PREVIEW'}</span>
-                    <p className="text-[10px] sm:text-xs md:text-sm font-bold text-white line-clamp-1">
-                      {selectedLanguage === 'id' ? 'Materi Utama JagoAI School & Kurikulum Sains Data' : 'The Ultimate JagoAI School & Data Science Course'}
-                    </p>
-                  </div>
                 </div>
+              )}
 
-                {/* Ribbon partners below */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-4 border-t border-white/10 pt-3 sm:pt-5 pt-3 mt-3 sm:mt-5 text-center">
-                  <div className="space-y-0.5">
-                    <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-[#e8ba00] block">PROMPT</span>
-                    <span className="text-[6.5px] sm:text-[8px] uppercase tracking-widest text-white/50 block font-mono">{selectedLanguage === 'id' ? 'Terpopuler' : 'Popular'}</span>
+              {/* Login Offer Overlay */}
+              {showLoginOffer && (
+                <div className="absolute inset-0 bg-[#0f172a]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-8 text-center text-white animate-in fade-in duration-350 z-30">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#e8ba00]/10 border border-[#e8ba00]/30 flex items-center justify-center text-[#e8ba00] mb-3 sm:mb-4 animate-bounce">
+                    <Symbol name="lock" className="text-xl sm:text-2xl" fill />
                   </div>
-                  <div className="space-y-0.5 border-x border-white/10">
-                    <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-white block">MACHINE</span>
-                    <span className="text-[6.5px] sm:text-[8px] uppercase tracking-widest text-white/50 block font-mono">{selectedLanguage === 'id' ? 'Kurikulum' : 'Syllabus'}</span>
+                  <h3 className="text-sm sm:text-lg font-display font-black tracking-tight text-white mb-1.5 leading-snug">
+                    {selectedLanguage === 'id' ? 'Batas Pratinjau 1 Menit Tercapai' : '1-Minute Preview Limit Reached'}
+                  </h3>
+                  <p className="text-[10px] sm:text-xs text-slate-300 max-w-[280px] leading-relaxed mb-4 sm:mb-6 font-medium">
+                    {selectedLanguage === 'id'
+                      ? 'Daftar akun JagoAI School sekarang untuk mengakses materi kurikulum lengkap & lab interaktif.'
+                      : 'Create a JagoAI School account now to access complete courses, coding sandboxes, & live mentor sessions.'}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2.5 w-full max-w-[260px]">
+                    <button
+                      onClick={() => onNavigateToAuth('register')}
+                      className="flex-1 py-3 bg-[#1800ad] hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer border-none shadow-md shadow-[#1800ad]/10 active:scale-95 text-center"
+                    >
+                      {selectedLanguage === 'id' ? 'Daftar Gratis' : 'Register Free'}
+                    </button>
+                    <button
+                      onClick={() => onNavigateToAuth('login')}
+                      className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all cursor-pointer active:scale-95 text-center"
+                    >
+                      {selectedLanguage === 'id' ? 'Masuk' : 'Log In'}
+                    </button>
                   </div>
-                  <div className="space-y-0.5">
-                    <span className="text-[8px] sm:text-[10px] md:text-xs font-bold text-rose-400 block">DATA SCI</span>
-                    <span className="text-[6.5px] sm:text-[8px] uppercase tracking-widest text-white/50 block font-mono">{selectedLanguage === 'id' ? 'Portofolio' : 'Portfolio'}</span>
-                  </div>
+                  <button
+                    onClick={() => { setShowLoginOffer(false); setIsPlayingVideo(true); setVideoLoading(true); setPlayTime(0); }}
+                    className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-white transition-colors mt-4 border-none bg-transparent cursor-pointer"
+                  >
+                    {selectedLanguage === 'id' ? 'Tonton Lagi' : 'Watch Again'}
+                  </button>
                 </div>
-
-              </div>
+              )}
             </div>
           </motion.div>
 
         </div>
       </header>
 
-
-
       {/* 4. THE ULTIMATE KURSUS GRID (UDEMY ACCENT FLAVOR) */}
-      <section id="landing-courses" className="max-w-7xl mx-auto py-20 px-4 md:px-10 lg:px-20 space-y-12">
+      <section id="landing-courses" className="relative py-24 border-b border-gray-100/50 bg-gradient-to-b from-white via-indigo-50/10 to-white overflow-hidden text-left">
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-40 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 md:px-10 lg:px-20 space-y-12 relative z-10">
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-3 text-left">
-            <span className="text-[10px] font-bold text-[#1800ad] uppercase tracking-[0.25em] bg-[#1800ad]/5 px-3 py-1.5 rounded-full inline-block">
-              {selectedLanguage === 'id' ? 'Katalog Pembelajaran' : 'Curriculum Catalog'}
-            </span>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 tracking-tight">
-              {t.coursesTitle}
-            </h2>
-            <p className="text-gray-500 text-xs md:text-sm max-w-xl font-medium leading-relaxed">
-              {t.coursesSub}
-            </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-3 text-left">
+              <span className="text-[10px] font-bold text-[#1800ad] uppercase tracking-[0.25em] bg-[#1800ad]/5 px-3 py-1.5 rounded-full inline-block">
+                {selectedLanguage === 'id' ? 'Katalog Pembelajaran' : 'Curriculum Catalog'}
+              </span>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 tracking-tight">
+                {t.coursesTitle}
+              </h2>
+              <p className="text-gray-500 text-xs md:text-sm max-w-xl font-medium leading-relaxed">
+                {t.coursesSub}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Categories Tab selector (Glass pills) */}
-        <div className="flex flex-wrap gap-1.5 sm:gap-2.5 pb-4 border-b border-gray-100">
-          {uniqueCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => { setSelectedCategory(cat); }}
-              className={`px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-[9.5px] sm:text-[10.5px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${selectedCategory === cat
-                ? 'bg-[#1800ad] text-white shadow-lg shadow-[#1800ad]/20 scale-102 font-bold'
-                : 'bg-white text-gray-500 border border-gray-200/60 hover:text-gray-900 hover:border-gray-300'
-                }`}
-            >
-              {cat === 'all' || cat === 'Semua' ? (selectedLanguage === 'id' ? 'Semua Kursus' : 'All Courses') : cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Dynamic Courses grid layout */}
-        {filteredCourses.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 xs:gap-3 sm:gap-6">
-            {filteredCourses.map((course) => (
-              <motion.div
-                layout
-                key={course.id}
-                onClick={() => setSelectedCourseDetail(course)}
-                className="group bg-white border border-gray-100 rounded-xl xs:rounded-2xl sm:rounded-[28px] overflow-hidden flex flex-col h-full shadow-[0_2px_10px_rgba(0,0,0,0.01)] sm:shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(11,0,110,0.06)] hover:-translate-y-0.5 sm:hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left relative"
+          {/* Categories Tab selector (Glass pills) */}
+          <div className="flex flex-wrap gap-1.5 sm:gap-2.5 pb-4 border-b border-gray-100">
+            {uniqueCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => { setSelectedCategory(cat); }}
+                className={`px-3 py-2 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl text-[9.5px] sm:text-[10.5px] font-semibold uppercase tracking-wider transition-all cursor-pointer ${selectedCategory === cat
+                  ? 'bg-[#1800ad] text-white shadow-lg shadow-[#1800ad]/20 scale-102 font-bold border-none'
+                  : 'bg-white text-gray-500 border border-gray-205 hover:text-gray-900 hover:border-gray-300'
+                  }`}
               >
-                {/* Course Image Wrapper */}
-                <div className="relative aspect-video overflow-hidden shrink-0 bg-gray-100">
-                  <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
+                {cat === 'all' || cat === 'Semua' ? (selectedLanguage === 'id' ? 'Semua Kursus' : 'All Courses') : cat}
+              </button>
+            ))}
+          </div>
 
-                  {/* Badge Row overlay */}
-                  <div className="absolute top-1.5 left-1.5 xs:top-3 xs:left-3 flex flex-col gap-1 items-start">
-                    {course.badge && (
-                      <span className="bg-gradient-to-r from-[#1800ad] to-[#0e0066] text-white px-1.5 py-0.5 xs:px-3.5 xs:py-1.5 rounded-md xs:rounded-xl text-[6px] xs:text-[8px] font-black uppercase tracking-widest shadow-sm">
-                        {course.badge}
-                      </span>
-                    )}
-                  </div>
+          {/* Dynamic Courses grid layout */}
+          {filteredCourses.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 xs:gap-3 sm:gap-6">
+              {filteredCourses.map((course) => (
+                <motion.div
+                  layout
+                  key={course.id}
+                  onClick={() => setSelectedCourseDetail(course)}
+                  className="group bg-white border border-slate-200/60 rounded-xl xs:rounded-2xl sm:rounded-[28px] overflow-hidden flex flex-col h-full shadow-[0_2px_8px_rgba(0,0,0,0.01)] sm:shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_50px_rgba(24,0,173,0.08)] hover:border-slate-300 hover:-translate-y-1.5 transition-all duration-500 cursor-pointer text-left relative"
+                >
+                  {/* Course Image Wrapper */}
+                  <div className="relative aspect-video overflow-hidden shrink-0 bg-gray-100">
+                    <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
 
-                  <div className="absolute bottom-1.5 right-1.5 xs:bottom-3 xs:right-3 bg-black/40 backdrop-blur-md text-white p-1 xs:p-2.5 rounded-md xs:rounded-xl border border-white/10">
-                    <Symbol name={
-                      course.category === 'Vision' ? 'visibility' :
-                        course.category === 'Robotics' ? 'precision_manufacturing' :
-                          course.category === 'NLP' ? 'translate' :
-                            course.category === 'Generative AI' ? 'auto_awesome' : 'auto_stories'
-                    } className="text-[10px] xs:text-sm" />
-                  </div>
-                </div>
-
-                {/* Course Texts */}
-                <div className="p-2.5 xs:p-3.5 sm:p-5.5 flex-1 flex flex-col justify-between space-y-2 xs:space-y-4">
-                  <div className="space-y-1.5 xs:space-y-3 text-left">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[7px] xs:text-[8.5px] font-mono font-black text-[#1800ad] uppercase tracking-wider bg-[#1800ad]/5 px-1 py-0.5 xs:px-2.5 xs:py-1 rounded-sm xs:rounded-md">{course.category}</span>
-                      <span className="text-[7px] xs:text-[9px] font-bold text-gray-400">#0{course.id}</span>
-                    </div>
-
-                    <h3 className="text-[9.5px] xs:text-[11px] sm:text-sm font-bold text-gray-900 group-hover:text-[#1800ad] transition-colors line-clamp-2 min-h-[28px] xs:min-h-10 leading-tight sm:leading-snug">
-                      {course.title}
-                    </h3>
-                    <p className="text-[8px] xs:text-[10px] text-gray-400 font-medium line-clamp-1">{course.author}</p>
-
-                    {/* Visual Key Skills Badges inside Course Card! (Hidden on mobile to save space) */}
-                    <div className="hidden sm:flex flex-wrap gap-1 pt-1">
-                      {course.skills.slice(0, 3).map((skill) => (
-                        <span key={skill} className="text-[8px] font-black uppercase tracking-wider text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
-                          {skill}
+                    {/* Badge Row overlay */}
+                    <div className="absolute top-1.5 left-1.5 xs:top-3 xs:left-3 flex flex-col gap-1 items-start">
+                      {course.badge && (
+                        <span className="bg-gradient-to-r from-[#1800ad] to-[#0e0066] text-white px-1.5 py-0.5 xs:px-3.5 xs:py-1.5 rounded-md xs:rounded-xl text-[6px] xs:text-[8px] font-black uppercase tracking-widest shadow-sm">
+                          {course.badge}
                         </span>
-                      ))}
-                      {course.skills.length > 3 && (
-                        <span className="text-[8px] font-bold text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md">+{course.skills.length - 3}</span>
                       )}
                     </div>
 
-                    {/* Stars ratings */}
-                    <div className="flex items-center gap-0.5 xs:gap-1 pt-0.5">
-                      <span className="text-[9px] xs:text-xs font-bold text-amber-600">{course.rating.toFixed(1)}</span>
-                      <div className="flex items-center text-amber-500">
-                        <Symbol name="star" className="text-[9px] xs:text-xs fill-1" />
+                    <div className="absolute bottom-1.5 right-1.5 xs:bottom-3 xs:right-3 bg-black/40 backdrop-blur-md text-white p-1 xs:p-2.5 rounded-md xs:rounded-xl border border-white/10">
+                      <Symbol name={
+                        course.category === 'Vision' ? 'visibility' :
+                          course.category === 'Robotics' ? 'precision_manufacturing' :
+                            course.category === 'NLP' ? 'translate' :
+                              course.category === 'Generative AI' ? 'auto_awesome' : 'auto_stories'
+                      } className="text-[10px] xs:text-sm" />
+                    </div>
+                  </div>
+
+                  {/* Course Texts */}
+                  <div className="p-2.5 xs:p-3.5 sm:p-5.5 flex-1 flex flex-col justify-between space-y-2 xs:space-y-4">
+                    <div className="space-y-1.5 xs:space-y-3 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[7px] xs:text-[8.5px] font-mono font-black text-[#1800ad] uppercase tracking-wider bg-[#1800ad]/5 px-1 py-0.5 xs:px-2.5 xs:py-1 rounded-sm xs:rounded-md">{course.category}</span>
+                        <span className="text-[7px] xs:text-[9px] font-bold text-gray-400">#0{course.id}</span>
                       </div>
-                      <span className="text-[7.5px] xs:text-[10px] text-gray-400 font-bold">({course.reviewsCount.toLocaleString()})</span>
+
+                      <h3 className="text-[9.5px] xs:text-[11px] sm:text-sm font-bold text-gray-900 group-hover:text-[#1800ad] transition-colors line-clamp-2 min-h-[28px] xs:min-h-10 leading-tight sm:leading-snug">
+                        {course.title}
+                      </h3>
+                      <p className="text-[8px] xs:text-[10px] text-gray-400 font-medium line-clamp-1">{course.author}</p>
+
+                      {/* Visual Key Skills Badges inside Course Card! (Hidden on mobile to save space) */}
+                      <div className="hidden sm:flex flex-wrap gap-1 pt-1">
+                        {course.skills.slice(0, 3).map((skill) => (
+                          <span key={skill} className="text-[8px] font-black uppercase tracking-wider text-gray-500 bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">
+                            {skill}
+                          </span>
+                        ))}
+                        {course.skills.length > 3 && (
+                          <span className="text-[8px] font-bold text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded-md">+{course.skills.length - 3}</span>
+                        )}
+                      </div>
+
+                      {/* Stars ratings */}
+                      <div className="flex items-center gap-0.5 xs:gap-1 pt-0.5">
+                        <span className="text-[9px] xs:text-xs font-bold text-amber-600">{course.rating.toFixed(1)}</span>
+                        <div className="flex items-center text-amber-500">
+                          <Symbol name="star" className="text-[9px] xs:text-xs fill-1" />
+                        </div>
+                        <span className="text-[7.5px] xs:text-[10px] text-gray-400 font-bold">({course.reviewsCount.toLocaleString()})</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Info details (No price as requested) */}
-                  <div className="pt-2 xs:pt-3.5 border-t border-gray-100 flex flex-row items-center justify-between gap-1">
-                    <div className="flex items-center gap-0.5 xs:gap-1.5 text-[8px] xs:text-[10.5px] text-gray-500 font-bold whitespace-nowrap">
-                      <Symbol name="menu_book" className="text-[#1800ad] text-[9px] xs:text-xs" />
-                      <span>{course.skills.length} Modul</span>
+                    {/* Info details (No price as requested) */}
+                    <div className="pt-2 xs:pt-3.5 border-t border-gray-100 flex flex-row items-center justify-between gap-1">
+                      <div className="flex items-center gap-0.5 xs:gap-1.5 text-[8px] xs:text-[10.5px] text-gray-500 font-bold whitespace-nowrap">
+                        <Symbol name="menu_book" className="text-[#1800ad] text-[9px] xs:text-xs" />
+                        <span>{course.skills.length} Modul</span>
+                      </div>
+                      {/* View Button */}
+                      <span className="text-[8px] xs:text-[10px] font-bold uppercase text-[#1800ad] flex items-center gap-0.5 whitespace-nowrap">
+                        <span>{selectedLanguage === 'id' ? 'Lihat' : 'View'}</span>
+                        <Symbol name="chevron_right" className="text-[9px] xs:text-xs transform group-hover:translate-x-1 transition-transform duration-300" />
+                      </span>
                     </div>
-                    {/* View Button */}
-                    <span className="text-[8px] xs:text-[10px] font-bold uppercase text-[#1800ad] flex items-center gap-0.2 hover:translate-x-0.5 transition-transform whitespace-nowrap">
-                      <span>{selectedLanguage === 'id' ? 'Lihat' : 'View'}</span>
-                      <Symbol name="chevron_right" className="text-[9px] xs:text-xs" />
-                    </span>
+
                   </div>
-
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-24 text-center space-y-4 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
-            <div className="w-16 h-16 rounded-[22px] bg-gray-50 flex items-center justify-center text-gray-400 shadow-inner">
-              <Symbol name="search_off" className="text-3xl" />
+                </motion.div>
+              ))}
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-bold text-gray-700">Tidak ada kursus yang cocok</p>
-              <p className="text-xs text-gray-400 max-w-sm mx-auto">Kami tidak dapat menemukan pencarian Anda. Coba kata kunci yang lebih umum.</p>
+          ) : (
+            <div className="py-24 text-center space-y-4 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-[22px] bg-gray-50 flex items-center justify-center text-gray-400 shadow-inner">
+                <Symbol name="search_off" className="text-3xl" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-gray-700">Tidak ada kursus yang cocok</p>
+                <p className="text-xs text-gray-400 max-w-sm mx-auto">Kami tidak dapat menemukan pencarian Anda. Coba kata kunci yang lebih umum.</p>
+              </div>
+              <button
+                onClick={() => { setSearchTerm(''); setSelectedCategory('Semua'); }}
+                className="text-xs font-black text-[#1800ad] uppercase tracking-wider hover:underline"
+              >
+                Reset Filter Pencarian
+              </button>
             </div>
-            <button
-              onClick={() => { setSearchTerm(''); setSelectedCategory('Semua'); }}
-              className="text-xs font-black text-[#1800ad] uppercase tracking-wider hover:underline"
-            >
-              Reset Filter Pencarian
-            </button>
-          </div>
-        )}
+          )}
 
-      </section>
-
-      {/* 5. STATS SUMMARY COMPONENT (TABS COMPONETIZED IN LANDING CARD) */}
-      <section className="bg-gradient-to-br from-[#1800ad] to-[#120084] text-white py-16 px-4 md:px-10 lg:px-20 text-center relative overflow-hidden mt-8">
-        <div className="absolute top-[-100px] left-[-100px] w-64 h-64 bg-[#e8ba00]/10 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-[-100px] right-[-100px] w-96 h-96 bg-white/5 rounded-full blur-[80px]"></div>
-
-        <div className="max-w-7xl mx-auto grid grid-cols-4 gap-1 sm:gap-4 relative z-10">
-          <div className="space-y-1 border-r border-white/10 last:border-0 text-center">
-            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-bold text-[#e8ba00] block tracking-tight">40+</span>
-            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/60 tracking-widest block">{selectedLanguage === 'id' ? 'KURIKULUM' : 'MODULES'}</span>
-          </div>
-          <div className="space-y-1 border-r border-white/10 last:border-0 text-center">
-            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-bold text-[#e8ba00] block tracking-tight">15</span>
-            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/60 tracking-widest block">{selectedLanguage === 'id' ? 'MENTOR AHLI' : 'EXPERT MENTORS'}</span>
-          </div>
-          <div className="space-y-1 border-r border-white/10 last:border-0 text-center">
-            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-bold text-[#e8ba00] block tracking-tight">12.5k+</span>
-            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/60 tracking-widest block">{selectedLanguage === 'id' ? 'SISWA' : 'ENROLLED'}</span>
-          </div>
-          <div className="space-y-1 last:border-0 text-center">
-            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-bold text-[#e8ba00] block tracking-tight">99.2%</span>
-            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/60 tracking-widest block">{selectedLanguage === 'id' ? 'KEPUASAN' : 'SATISFACTION'}</span>
-          </div>
         </div>
       </section>
 
-      {/* 6. WHY JAGOAI (TAILWIND BENTO GRID STYLE) */}
-      <section id="landing-why" className="bg-[#f0f3f6] py-24 px-4 md:px-10 lg:px-20 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto space-y-16">
+      {/* 5. STATS SUMMARY COMPONENT (TABS COMPONETIZED IN LANDING CARD) */}
+      <section className="bg-gradient-to-br from-[#0e0066] to-[#08003a] text-white py-20 px-4 md:px-10 lg:px-20 text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:24px_24px] opacity-45"></div>
+        <div className="absolute top-[-100px] left-[-100px] w-64 h-64 bg-[#e8ba00]/10 rounded-full blur-[100px]"></div>
+        <div className="absolute bottom-[-100px] right-[-100px] w-96 h-96 bg-[#1800ad]/20 rounded-full blur-[100px]"></div>
+
+        <div className="max-w-7xl mx-auto grid grid-cols-4 gap-1 sm:gap-4 relative z-10">
+          <div className="space-y-1.5 border-r border-white/10 last:border-0 text-center group">
+            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-extrabold text-[#e8ba00] block tracking-tight drop-shadow-[0_0_10px_rgba(232,186,0,0.35)] group-hover:scale-105 transition-transform duration-300">40+</span>
+            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/70 tracking-widest block font-mono">{selectedLanguage === 'id' ? 'KURIKULUM' : 'MODULES'}</span>
+          </div>
+          <div className="space-y-1.5 border-r border-white/10 last:border-0 text-center group">
+            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-extrabold text-[#e8ba00] block tracking-tight drop-shadow-[0_0_10px_rgba(232,186,0,0.35)] group-hover:scale-105 transition-transform duration-300">15</span>
+            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/70 tracking-widest block font-mono">{selectedLanguage === 'id' ? 'MENTOR AHLI' : 'EXPERT MENTORS'}</span>
+          </div>
+          <div className="space-y-1.5 border-r border-white/10 last:border-0 text-center group">
+            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-extrabold text-[#e8ba00] block tracking-tight drop-shadow-[0_0_10px_rgba(232,186,0,0.35)] group-hover:scale-105 transition-transform duration-300">12.5k+</span>
+            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/70 tracking-widest block font-mono">{selectedLanguage === 'id' ? 'SISWA' : 'ENROLLED'}</span>
+          </div>
+          <div className="space-y-1.5 last:border-0 text-center group">
+            <span className="text-sm xs:text-xl sm:text-3xl md:text-5xl font-display font-extrabold text-[#e8ba00] block tracking-tight drop-shadow-[0_0_10px_rgba(232,186,0,0.35)] group-hover:scale-105 transition-transform duration-300">99.2%</span>
+            <span className="text-[6.5px] xs:text-[8px] sm:text-[10px] md:text-xs font-bold uppercase text-white/70 tracking-widest block font-mono">{selectedLanguage === 'id' ? 'KEPUASAN' : 'SATISFACTION'}</span>
+          </div>
+        </div>
+      </section>      {/* 6. WHY JAGOAI (TAILWIND BENTO GRID STYLE - PREMIUM LIGHT STYLE) */}
+      <section id="landing-why" className="bg-slate-50 py-24 px-4 md:px-10 lg:px-20 border-b border-slate-100/80 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-45 pointer-events-none"></div>
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#1800ad]/5 rounded-full blur-[120px] pointer-events-none select-none"></div>
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-[#e8ba00]/5 rounded-full blur-[120px] pointer-events-none select-none"></div>
+
+        <div className="max-w-7xl mx-auto space-y-16 relative z-10">
 
           <div className="text-center space-y-3 max-w-xl mx-auto">
-            <span className="text-[10px] font-bold text-[#1800ad] uppercase tracking-[0.25em] bg-[#1800ad]/5 px-3 py-1.5 rounded-full inline-block">
+            <span className="text-[10px] font-bold text-[#1800ad] uppercase tracking-[0.25em] bg-[#1800ad]/5 px-3.5 py-1.5 rounded-full inline-block">
               {selectedLanguage === 'id' ? 'PRESTASI BELAJAR' : 'LEARNING PERFORMANCE'}
             </span>
             <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 tracking-tight">
@@ -706,65 +891,65 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
 
             {/* Box 1 */}
-            <div className="bg-white p-3.5 xs:p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-gray-100/80 space-y-3 xs:space-y-6 shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 sm:hover:-translate-y-1.5 transition-all flex flex-col justify-between text-left duration-300">
+            <div className="bg-white p-4 xs:p-6 sm:p-8 rounded-2xl sm:rounded-[32px] border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_20px_40px_rgba(24,0,173,0.05)] hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between text-left">
               <div className="space-y-2 xs:space-y-4">
-                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-indigo-50 text-[#1800ad] rounded-lg xs:rounded-2xl flex items-center justify-center shadow-inner">
+                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-indigo-50 text-[#1800ad] rounded-lg xs:rounded-2xl flex items-center justify-center border border-indigo-100/50">
                   <Symbol name="chat" className="text-base xs:text-2xl" />
                 </div>
                 <h3 className="text-xs xs:text-base font-bold text-gray-900 leading-snug xs:leading-tight">{t.why1Title}</h3>
                 <p className="text-[9px] xs:text-xs text-gray-500 leading-relaxed font-medium line-clamp-4 xs:line-clamp-none">{t.why1Desc}</p>
               </div>
-              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1d0a92] uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer hover:underline" onClick={() => onNavigateToAuth('login')}>
+              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1800ad] hover:text-black uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer transition-colors" onClick={() => onNavigateToAuth('login')}>
                 <span>{selectedLanguage === 'id' ? 'Mentoring' : 'Mentoring'}</span>
-                <Symbol name="keyboard_arrow_right" className="text-xs" />
+                <Symbol name="keyboard_arrow_right" className="text-xs transform group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
 
             {/* Box 2 */}
-            <div className="bg-white p-3.5 xs:p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-gray-100/80 space-y-3 xs:space-y-6 shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 sm:hover:-translate-y-1.5 transition-all flex flex-col justify-between text-left duration-300">
+            <div className="bg-white p-4 xs:p-6 sm:p-8 rounded-2xl sm:rounded-[32px] border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_20px_40px_rgba(24,0,173,0.05)] hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between text-left">
               <div className="space-y-2 xs:space-y-4">
-                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-amber-50 text-[#e8ba00] rounded-lg xs:rounded-2xl flex items-center justify-center shadow-inner">
+                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-amber-50 text-[#e8ba00] rounded-lg xs:rounded-2xl flex items-center justify-center border border-amber-100/50">
                   <Symbol name="integration_instructions" className="text-base xs:text-2xl" />
                 </div>
                 <h3 className="text-xs xs:text-base font-bold text-gray-900 leading-snug xs:leading-tight">{t.why2Title}</h3>
                 <p className="text-[9px] xs:text-xs text-gray-500 leading-relaxed font-medium line-clamp-4 xs:line-clamp-none">{t.why2Desc}</p>
               </div>
-              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1800ad] uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer hover:underline" onClick={() => onNavigateToAuth('login')}>
+              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1800ad] hover:text-black uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer transition-colors" onClick={() => onNavigateToAuth('login')}>
                 <span>{selectedLanguage === 'id' ? 'Playground' : 'Sandbox'}</span>
-                <Symbol name="keyboard_arrow_right" className="text-xs" />
+                <Symbol name="keyboard_arrow_right" className="text-xs transform group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
 
             {/* Box 3 */}
-            <div className="bg-white p-3.5 xs:p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-gray-100/80 space-y-3 xs:space-y-6 shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 sm:hover:-translate-y-1.5 transition-all flex flex-col justify-between text-left duration-300">
+            <div className="bg-white p-4 xs:p-6 sm:p-8 rounded-2xl sm:rounded-[32px] border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_20px_40px_rgba(24,0,173,0.05)] hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between text-left">
               <div className="space-y-2 xs:space-y-4">
-                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-emerald-50 text-emerald-600 rounded-lg xs:rounded-2xl flex items-center justify-center shadow-inner">
+                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-emerald-50 text-emerald-600 rounded-lg xs:rounded-2xl flex items-center justify-center border border-emerald-100/50">
                   <Symbol name="verified" className="text-base xs:text-2xl" />
                 </div>
                 <h3 className="text-xs xs:text-base font-bold text-gray-900 leading-snug xs:leading-tight">{t.why3Title}</h3>
                 <p className="text-[9px] xs:text-xs text-gray-500 leading-relaxed font-medium line-clamp-4 xs:line-clamp-none">{t.why3Desc}</p>
               </div>
-              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1d0a92] uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer hover:underline" onClick={() => onNavigateToAuth('login')}>
+              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1800ad] hover:text-black uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer transition-colors" onClick={() => onNavigateToAuth('login')}>
                 <span>{selectedLanguage === 'id' ? 'Kurikulum' : 'Syllabus'}</span>
-                <Symbol name="keyboard_arrow_right" className="text-xs" />
+                <Symbol name="keyboard_arrow_right" className="text-xs transform group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
 
             {/* Box 4 */}
-            <div className="bg-white p-3.5 xs:p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-gray-100/80 space-y-3 xs:space-y-6 shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 sm:hover:-translate-y-1.5 transition-all flex flex-col justify-between text-left duration-300">
+            <div className="bg-white p-4 xs:p-6 sm:p-8 rounded-2xl sm:rounded-[32px] border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-[0_20px_40px_rgba(24,0,173,0.05)] hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between text-left">
               <div className="space-y-2 xs:space-y-4">
-                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-purple-50 text-purple-600 rounded-lg xs:rounded-2xl flex items-center justify-center shadow-inner">
+                <div className="w-8 h-8 xs:w-12 xs:h-12 bg-purple-50 text-purple-600 rounded-lg xs:rounded-2xl flex items-center justify-center border border-purple-100/50">
                   <Symbol name="groups" className="text-base xs:text-2xl" />
                 </div>
                 <h3 className="text-xs xs:text-base font-bold text-gray-900 leading-snug xs:leading-tight">{t.why4Title}</h3>
                 <p className="text-[9px] xs:text-xs text-gray-500 leading-relaxed font-medium line-clamp-4 xs:line-clamp-none">{t.why4Desc}</p>
               </div>
-              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1800ad] uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer hover:underline" onClick={() => onNavigateToAuth('login')}>
+              <span className="text-[7.5px] xs:text-[9.5px] font-bold text-[#1800ad] hover:text-black uppercase tracking-wider mt-2 xs:mt-4 flex items-center gap-0.5 cursor-pointer transition-colors" onClick={() => onNavigateToAuth('login')}>
                 <span>{selectedLanguage === 'id' ? 'Komunitas' : 'Guild'}</span>
-                <Symbol name="keyboard_arrow_right" className="text-xs" />
+                <Symbol name="keyboard_arrow_right" className="text-xs transform group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
 
@@ -798,18 +983,16 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
 
             {/* Left Column: Interactive Feature selector tabs */}
-            <div className="lg:col-span-5 space-y-3 text-left">
-
-              {/* Tab 1: AI Sandbox */}
+            <div className="lg:col-span-5 space-y-3 text-left">              {/* Tab 1: AI Sandbox */}
               <button
                 onClick={() => setSelectedFeatureTab('sandbox')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'sandbox'
-                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
-                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                className={`w-full p-5 rounded-2xl text-left transition-all border block cursor-pointer ${selectedFeatureTab === 'sandbox'
+                  ? 'bg-white border-slate-200/60 shadow-[0_10px_35px_rgba(24,0,173,0.06)] border-l-4 border-l-[#1800ad]'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.02] hover:border-slate-100'
                   }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'sandbox' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'sandbox' ? 'bg-[#1800ad] text-white shadow-md' : 'bg-gray-100 text-gray-500'
                     }`}>
                     <Symbol name="terminal" className="text-lg" />
                   </div>
@@ -829,13 +1012,13 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               {/* Tab 2: Private Consultation */}
               <button
                 onClick={() => setSelectedFeatureTab('consult')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'consult'
-                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
-                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                className={`w-full p-5 rounded-2xl text-left transition-all border block cursor-pointer ${selectedFeatureTab === 'consult'
+                  ? 'bg-white border-slate-200/60 shadow-[0_10px_35px_rgba(24,0,173,0.06)] border-l-4 border-l-[#1800ad]'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.02] hover:border-slate-100'
                   }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'consult' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'consult' ? 'bg-[#1800ad] text-white shadow-md' : 'bg-gray-100 text-gray-500'
                     }`}>
                     <Symbol name="calendar_month" className="text-lg" />
                   </div>
@@ -855,13 +1038,13 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               {/* Tab 3: Automated Quiz Feedbacks */}
               <button
                 onClick={() => setSelectedFeatureTab('lms')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'lms'
-                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
-                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                className={`w-full p-5 rounded-2xl text-left transition-all border block cursor-pointer ${selectedFeatureTab === 'lms'
+                  ? 'bg-white border-slate-200/60 shadow-[0_10px_35px_rgba(24,0,173,0.06)] border-l-4 border-l-[#1800ad]'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.02] hover:border-slate-100'
                   }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'lms' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'lms' ? 'bg-[#1800ad] text-white shadow-md' : 'bg-gray-100 text-gray-500'
                     }`}>
                     <Symbol name="auto_awesome" className="text-lg" />
                   </div>
@@ -881,13 +1064,13 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               {/* Tab 4: Student guilds */}
               <button
                 onClick={() => setSelectedFeatureTab('forums')}
-                className={`w-full p-5 rounded-2xl text-left transition-all border block ${selectedFeatureTab === 'forums'
-                  ? 'bg-[#1800ad]/5 border-[#1800ad]/20 shadow-sm'
-                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.03] hover:border-[#1800ad]/10'
+                className={`w-full p-5 rounded-2xl text-left transition-all border block cursor-pointer ${selectedFeatureTab === 'forums'
+                  ? 'bg-white border-slate-200/60 shadow-[0_10px_35px_rgba(24,0,173,0.06)] border-l-4 border-l-[#1800ad]'
+                  : 'bg-transparent border-transparent hover:bg-[#1800ad]/[0.02] hover:border-slate-100'
                   }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'forums' ? 'bg-[#1800ad] text-white' : 'bg-gray-100 text-gray-505'
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedFeatureTab === 'forums' ? 'bg-[#1800ad] text-white shadow-md' : 'bg-gray-100 text-gray-500'
                     }`}>
                     <Symbol name="forum" className="text-lg" />
                   </div>
@@ -904,8 +1087,10 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 </div>
               </button>
 
-            </div>            {/* Right Column: High-Fidelity UI Live Previews Mockup (SaaS Dashboard Layout) */}
-            <div className="lg:col-span-7 bg-white border border-slate-100 rounded-[24px] sm:rounded-[36px] p-4 sm:p-6 md:p-8 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.04)] relative overflow-hidden self-stretch flex items-center min-h-[380px] sm:min-h-[440px]">
+            </div>
+
+            {/* Right Column: High-Fidelity UI Live Previews Mockup (SaaS Dashboard Layout) */}
+            <div className="lg:col-span-7 bg-slate-50 border border-slate-100 rounded-[24px] sm:rounded-[36px] p-4 sm:p-6 md:p-8 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.04)] relative overflow-hidden self-stretch flex items-center min-h-[380px] sm:min-h-[440px]">
 
               {/* Dynamic Inner Simulated Renderings with clean crisp light styles */}
               <div className="w-full text-slate-800 font-sans text-left space-y-4">
@@ -918,22 +1103,20 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}
                       transition={{ duration: 0.3 }}
-                      className="space-y-4 text-left"
+                      className="space-y-4 text-left w-full"
                     >
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3 gap-2">
+                      <div className="flex items-center justify-between border-b border-gray-150 pb-3 gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-black uppercase text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md tracking-wider">AI Toolkit Sandbox</span>
+                          <span className="text-[9px] font-black uppercase text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md tracking-wider border border-amber-200/50">AI Toolkit Sandbox</span>
                           <span className="text-xs text-gray-800 font-bold hidden sm:inline">Model Playground</span>
                         </div>
-                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md shrink-0">
+                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md shrink-0 border border-emerald-100">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                           API Connected
                         </span>
-                      </div>
-
-                      {/* Mini AI-Toolkit Card Layout from logged-in AIToolkit.tsx */}
+                      </div>                      {/* Mini AI-Toolkit Card Layout from logged-in AIToolkit.tsx */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 space-y-3 shadow-sm hover:border-[#1800ad]/30 transition-all">
+                        <div className="bg-white p-4 rounded-2xl border border-slate-200/60 space-y-3 shadow-sm hover:border-slate-300 transition-all">
                           <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
                               <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=80&h=80&fit=crop" className="w-6 h-6 rounded-lg object-cover" alt="Gemini Concept" referrerPolicy="no-referrer" />
@@ -943,38 +1126,51 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                           </div>
                           <div>
                             <span className="text-xs font-black text-gray-900 block">Gemini 1.5 Pro</span>
-                            <span className="text-[9px] text-gray-400 block line-clamp-1 mt-0.5">Advanced multimodal reasoning.</span>
+                            <span className="text-[9px] text-gray-400 block line-clamp-1 mt-0.5">Advanced reasoning.</span>
                           </div>
-                          <button onClick={() => onNavigateToAuth('register')} className="w-full py-1.5 bg-[#1800ad] hover:bg-black text-white rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors">
+                          <button onClick={() => onNavigateToAuth('register')} className="w-full py-1.5 bg-[#1800ad] hover:bg-black text-white rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors border-none cursor-pointer">
                             <span>Analyze</span>
                             <Symbol name="query_stats" className="text-[10px]" />
                           </button>
                         </div>
 
-                        <div className="bg-[#f7f3f0] p-4 rounded-2xl border border-gray-100 space-y-3 shadow-sm hover:border-[#1800ad]/30 transition-all">
+                        <div className="bg-[#f7f3f0] p-4 rounded-2xl border border-slate-200/60 space-y-3 shadow-sm hover:border-slate-300 transition-all">
                           <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                              <img src="https://images.unsplash.com/photo-1677442136019-21780efad99a?w=80&h=80&fit=crop" className="w-6 h-6 rounded-lg object-cover" alt="Claude Concept" referrerPolicy="no-referrer" />
-                              <span className="text-xs font-black text-gray-950">Claude</span>
+                              <img src="https://images.unsplash.com/photo-1677442136019-21780ecad99a?w=80&h=80&fit=crop" className="w-6 h-6 rounded-lg object-cover" alt="Claude Concept" referrerPolicy="no-referrer" />
+                              <span className="text-xs font-black text-gray-900">Claude</span>
                             </div>
                             <span className="text-[7px] font-black tracking-widest uppercase bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">PRO</span>
                           </div>
                           <div>
-                            <span className="text-xs font-black text-gray-950 block">Claude 3.5 Sonnet</span>
-                            <span className="text-[9px] text-gray-500 block line-clamp-1 mt-0.5">Gold standard of logical nuance.</span>
+                            <span className="text-xs font-black text-gray-900 block">Claude 3.5 Sonnet</span>
+                            <span className="text-[9px] text-gray-500 block line-clamp-1 mt-0.5">Logical nuance.</span>
                           </div>
-                          <button onClick={() => onNavigateToAuth('register')} className="w-full py-1.5 bg-[#1800ad] hover:bg-black text-white rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors">
+                          <button onClick={() => onNavigateToAuth('register')} className="w-full py-1.5 bg-[#1800ad] hover:bg-black text-white rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors border-none cursor-pointer">
                             <span>Analyze</span>
                             <Symbol name="query_stats" className="text-[10px]" />
                           </button>
                         </div>
                       </div>
 
-                      {/* Prompt and Output Area representing actual sandbox result */}
-                      <div className="bg-slate-50 border border-gray-100 rounded-2xl p-4 space-y-2 text-xs">
-                        <span className="text-[9px] text-gray-400 font-extrabold uppercase block font-mono">Simulated Model Output</span>
-                        <div className="bg-white p-2.5 rounded-lg text-slate-700 border border-slate-100 text-[10px] leading-relaxed italic">
-                          "Model Gemini tuned successfully with Learning Rate <span className="text-[#1800ad] font-bold">0.001</span> and optimal weights calculated in <span className="font-bold text-emerald-600">0.4s</span>."
+                      {/* Code editor terminal mockup */}
+                      <div className="bg-slate-900 text-slate-200 rounded-2xl p-4 space-y-2.5 font-mono text-[10px] sm:text-xs shadow-md border border-slate-805 text-left w-full">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                          </div>
+                          <span className="text-[8px] text-slate-500 font-bold">jagoai_sandbox.py</span>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-slate-400"><span className="text-pink-400 font-bold">import</span> torch, jagoai</p>
+                          <p className="text-slate-400">model = jagoai.models.CognitionLLM()</p>
+                          <p className="text-slate-400">model.train(epochs=<span className="text-amber-300">100</span>, lr=<span className="text-indigo-300">0.001</span>)</p>
+                        </div>
+                        <div className="border-t border-slate-800 pt-2 flex justify-between items-center text-[8px] text-slate-500">
+                          <span>Status: <span className="text-emerald-400 font-bold">Optimal</span></span>
+                          <span className="text-amber-400">Loss: 0.042</span>
                         </div>
                       </div>
                     </motion.div>
@@ -987,10 +1183,10 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}
                       transition={{ duration: 0.3 }}
-                      className="space-y-4 text-left"
+                      className="space-y-4 text-left w-full"
                     >
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">LIVE MENTOR HUB</span>
+                      <div className="flex items-center justify-between border-b border-gray-150 pb-3">
+                        <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-200/50">LIVE MENTOR HUB</span>
                         <span className="text-xs text-gray-800 font-bold">Konsultasi Tatap Muka</span>
                       </div>
 
@@ -998,23 +1194,34 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       <div className="space-y-3">
 
                         {/* Mentor Row 1 */}
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                        <div className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm hover:border-[#1800ad]/20 transition-all">
                           <div className="flex items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl object-cover shrink-0" alt="Mentor" referrerPolicy="no-referrer" />
+                            <div className="relative shrink-0">
+                              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl object-cover" alt="Mentor" referrerPolicy="no-referrer" />
+                              <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                              </span>
+                            </div>
                             <div className="text-left">
                               <span className="text-xs sm:text-sm font-black text-gray-900 block">Dr. Annisa Rahma</span>
                               <span className="text-[9px] sm:text-[10px] text-gray-400 block mt-0.5">Ahli NLP & Model Generative AI</span>
                             </div>
                           </div>
-                          <button onClick={() => onNavigateToAuth('login')} className="w-full sm:w-auto text-center px-4 py-2 bg-[#1800ad] hover:bg-black text-white rounded-xl text-[9px] sm:text-[9.5px] font-black uppercase tracking-wider transition-colors cursor-pointer justify-center block whitespace-nowrap">
+                          <button onClick={() => onNavigateToAuth('login')} className="w-full sm:w-auto text-center px-4 py-2 bg-[#1800ad] hover:bg-black text-white rounded-xl text-[9px] sm:text-[9.5px] font-black uppercase tracking-wider transition-colors cursor-pointer justify-center block whitespace-nowrap border-none">
                             Pilih Mentor
                           </button>
                         </div>
 
                         {/* Mentor Row 2 */}
-                        <div className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 opacity-80 shadow-sm">
+                        <div className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 opacity-70 shadow-sm">
                           <div className="flex items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl object-cover shrink-0" alt="Mentor 2" referrerPolicy="no-referrer" />
+                            <div className="relative shrink-0">
+                              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl object-cover" alt="Mentor 2" referrerPolicy="no-referrer" />
+                              <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                              </span>
+                            </div>
                             <div className="text-left">
                               <span className="text-xs sm:text-sm font-black text-gray-900 block">Rian Hidayat, M.T.</span>
                               <span className="text-[9px] sm:text-[10px] text-gray-400 block mt-0.5">Spesialis Visi Komputer & YOLO</span>
@@ -1041,7 +1248,6 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                           </div>
                         </div>
                       </div>
-
                     </motion.div>
                   )}
 
@@ -1052,15 +1258,15 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}
                       transition={{ duration: 0.3 }}
-                      className="space-y-4 text-left"
+                      className="space-y-4 text-left w-full"
                     >
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <span className="text-[9px] font-black uppercase text-[#1800ad] bg-[#1800ad]/5 px-2.5 py-1 rounded-md">LMS & KEMAJUAN AKADEMIK</span>
+                      <div className="flex items-center justify-between border-b border-gray-150 pb-3">
+                        <span className="text-[9px] font-black uppercase text-[#1800ad] bg-[#1800ad]/5 px-2.5 py-1 rounded-md border border-indigo-150">LMS & KEMAJUAN AKADEMIK</span>
                         <span className="text-xs text-gray-800 font-bold">Progress Dashboard</span>
                       </div>
 
                       {/* Course progress block identical to logged-in Dashboard.tsx */}
-                      <div className="bg-slate-50 border border-gray-100 rounded-2xl p-4.5 flex flex-col sm:flex-row items-center gap-4 shadow-sm hover:border-[#1800ad]/20 transition-all">
+                      <div className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4 shadow-sm hover:border-[#1800ad]/20 transition-all">
                         <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-200">
                           <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=200&fit=crop" className="w-full h-full object-cover" alt="YOLO Course" />
                         </div>
@@ -1069,8 +1275,8 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                             <span className="text-[#150096] font-black uppercase bg-[#1800ad]/5 px-2 py-0.5 rounded-md">YOLO v8 Object Detection</span>
                             <span className="text-[#1800ad] font-black">65% Progress</span>
                           </div>
-                          <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-[#1800ad] to-[#e8ba00] rounded-full" style={{ width: '65%' }}></div>
+                          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-gradient-to-r from-[#1800ad] to-[#e8ba00] rounded-full animate-pulse" style={{ width: '65%' }}></div>
                           </div>
                           <div className="flex justify-between items-center text-[9px] text-gray-400 font-bold">
                             <span>SKS: 3 Modul</span>
@@ -1081,7 +1287,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
                       {/* Course Sequence list in beautiful boxes */}
                       <div className="space-y-2">
-                        <div className="bg-white border-l-2 border-emerald-500 px-3.5 py-2.5 rounded-xl flex items-center justify-between shadow-sm">
+                        <div className="bg-white border-l-2 border-emerald-500 px-3.5 py-2.5 rounded-xl flex items-center justify-between shadow-sm border-y border-r border-slate-100">
                           <div className="flex items-center gap-3">
                             <div className="w-4 h-4 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[9px] font-black">✓</div>
                             <span className="text-xs font-semibold text-gray-700 font-sans">Bab 1: Pengenalan Logika Pemrograman AI</span>
@@ -1089,7 +1295,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                           <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md font-mono">100%</span>
                         </div>
 
-                        <div className="bg-white border-l-2 border-[#1800ad] px-3.5 py-2.5 rounded-xl flex items-center justify-between shadow-sm">
+                        <div className="bg-white border-l-2 border-[#1800ad] px-3.5 py-2.5 rounded-xl flex items-center justify-between shadow-sm border-y border-r border-slate-100">
                           <div className="flex items-center gap-3">
                             <div className="w-4 h-4 rounded-full bg-[#1800ad]/10 text-[#1800ad] flex items-center justify-center text-[9px] font-bold animate-pulse">●</div>
                             <span className="text-xs font-bold text-[#1800ad]">Bab 2: Pembuatan Prompt Cerdas & ChatGPT API</span>
@@ -1107,16 +1313,16 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}
                       transition={{ duration: 0.3 }}
-                      className="space-y-4 text-left"
+                      className="space-y-4 text-left w-full"
                     >
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <span className="text-[9px] font-black uppercase text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md">FORUM DISKUSI AKTIF</span>
+                      <div className="flex items-center justify-between border-b border-gray-150 pb-3">
+                        <span className="text-[9px] font-black uppercase text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md border border-sky-150">FORUM DISKUSI AKTIF</span>
                         <span className="text-xs text-gray-800 font-bold">Kolaborasi Siswa</span>
                       </div>
 
                       {/* Discussion posts */}
                       <div className="space-y-3">
-                        <div className="bg-white p-3.5 rounded-2xl border border-gray-100 space-y-2 shadow-sm">
+                        <div className="bg-white p-3.5 rounded-2xl border border-slate-100 space-y-2 shadow-sm hover:border-sky-200 transition-all">
                           <div className="flex items-center justify-between text-[9px]">
                             <span className="text-amber-600 font-black tracking-wider uppercase bg-amber-50 px-2 py-0.5 rounded-md">IDE BISNIS</span>
                             <span className="text-gray-400 font-bold">@ZulFikri • 2 jam lalu</span>
@@ -1124,11 +1330,11 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                           <h4 className="text-xs font-bold text-gray-900 line-clamp-1">Bagaimana cara optimalkan performa model di ponsel spek rendah?</h4>
                           <div className="flex items-center gap-3 text-[10px] text-gray-500 pt-1">
                             <span className="flex items-center gap-1"><Symbol name="thumb_up" className="text-[11px] text-[#1800ad]" /> 25 Suka</span>
-                            <span className="flex items-center gap-1"><Symbol name="chat" className="text-[11px] text-sky-500" /> 8 Diskusi Aktif</span>
+                            <span className="flex items-center gap-1"><Symbol name="chat" className="text-[11px] text-sky-500" /> 8 Diskusi</span>
                           </div>
                         </div>
 
-                        <div className="bg-white p-3.5 rounded-2xl border border-gray-100 space-y-2 shadow-sm">
+                        <div className="bg-white p-3.5 rounded-2xl border border-slate-100 space-y-2 shadow-sm hover:border-sky-200 transition-all">
                           <div className="flex items-center justify-between text-[9px]">
                             <span className="text-emerald-600 font-black tracking-wider uppercase bg-emerald-50 px-2 py-0.5 rounded-md">TIM PROYEK</span>
                             <span className="text-gray-400 font-bold">@Amelia_S • Kemarin</span>
@@ -1136,7 +1342,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                           <h4 className="text-xs font-bold text-gray-900 line-clamp-1">Mencari anggota tim untuk rintis asisten belajar berbasis sains data!</h4>
                           <div className="flex items-center gap-3 text-[10px] text-gray-500 pt-1">
                             <span className="flex items-center gap-1"><Symbol name="thumb_up" className="text-[11px] text-[#1800ad]" /> 42 Suka</span>
-                            <span className="flex items-center gap-1"><Symbol name="chat" className="text-[11px] text-sky-500" /> 15 Diskusi Aktif</span>
+                            <span className="flex items-center gap-1"><Symbol name="chat" className="text-[11px] text-sky-500" /> 15 Diskusi</span>
                           </div>
                         </div>
                       </div>
@@ -1153,10 +1359,10 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
       </section>
 
       {/* 8. CLASSIC INSPIRING TESTIMONY CAROUSEL SPLIT */}
-      <section id="landing-testimonials" className="bg-white py-20 px-4 md:px-10 lg:px-20 text-left">
+      <section id="landing-testimonials" className="bg-gradient-to-b from-[#f8fafc] to-white py-24 px-4 md:px-10 lg:px-20 text-left border-b border-slate-100">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="md:col-span-1 space-y-4 text-left">
-            <span className="text-[#e8ba00] font-bold text-xl">“</span>
+            <span className="text-[#e8ba00] font-display font-extrabold text-5xl leading-none block h-5">“</span>
             <h3 className="text-2xl md:text-3.5xl font-display font-bold text-gray-900 leading-tight tracking-tight">
               {selectedLanguage === 'id' ? 'Kisah Sukses Kreator Muda' : 'Real Stories from Young AI Pioneers'}
             </h3>
@@ -1167,14 +1373,14 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
             </p>
           </div>
 
-          <div className="md:col-span-2 grid grid-cols-2 gap-2 sm:gap-6 text-left">
+          <div className="md:col-span-2 grid grid-cols-2 gap-3 sm:gap-6 text-left">
 
-            <div className="border border-gray-100 p-3.5 xs:p-6 rounded-2xl sm:rounded-[24px] bg-gray-50 flex flex-col justify-between space-y-4 shadow-sm">
+            <div className="bg-white border border-slate-200/60 p-5 xs:p-7 rounded-2xl sm:rounded-[32px] shadow-[0_15px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_25px_50px_rgba(24,0,173,0.06)] hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-5">
               <p className="text-[9.5px] sm:text-xs font-bold text-gray-600 italic leading-relaxed line-clamp-6 sm:line-clamp-none">
                 “Materi Generative AI sangat komplit. Saya bisa mengaitkan API model pembelajaran ke prototype program pemilah sampah sekolah. Ditambah konsultasi 1-on-1 dengan mentor JagoAI sangat seru!”
               </p>
               <div className="flex items-center gap-2 xs:gap-3">
-                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&h=120&fit=crop" className="w-7 h-7 xs:w-10 xs:h-10 rounded-full object-cover border border-white" alt="Siswa 1" />
+                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&h=120&fit=crop" className="w-7 h-7 xs:w-10 xs:h-10 rounded-full object-cover border border-slate-100 shadow-sm" alt="Siswa 1" />
                 <div className="text-left leading-none">
                   <span className="text-[9px] xs:text-xs font-bold text-gray-900 block">Diki Hermawan</span>
                   <span className="text-[7.5px] xs:text-[10px] text-[#1800ad] font-bold block mt-0.5 xs:mt-1">Siswa SMA Telkom</span>
@@ -1182,12 +1388,12 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               </div>
             </div>
 
-            <div className="border border-gray-100 p-3.5 xs:p-6 rounded-2xl sm:rounded-[24px] bg-gray-50 flex flex-col justify-between space-y-4 shadow-sm">
+            <div className="bg-white border border-slate-200/60 p-5 xs:p-7 rounded-2xl sm:rounded-[32px] shadow-[0_15px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_25px_50px_rgba(24,0,173,0.06)] hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-5">
               <p className="text-[9.5px] sm:text-xs font-bold text-gray-600 italic leading-relaxed line-clamp-6 sm:line-clamp-none">
                 “Mempelajari linear algebra dan PyTorch di platform interaktif JagoAI School membuat saya jauh lebih santai menjalani ujian sekolah sains data. UI websitenya sangat cantik dan menarik!”
               </p>
               <div className="flex items-center gap-2 xs:gap-3">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop" className="w-7 h-7 xs:w-10 xs:h-10 rounded-full object-cover border border-white" alt="Siswa 2" />
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop" className="w-7 h-7 xs:w-10 xs:h-10 rounded-full object-cover border border-slate-100 shadow-sm" alt="Siswa 2" />
                 <div className="text-left leading-none">
                   <span className="text-[9px] xs:text-xs font-bold text-gray-900 block">Sarah Amelia</span>
                   <span className="text-[7.5px] xs:text-[10px] text-[#1800ad] font-bold block mt-0.5 xs:mt-1">Siswa SMK Telkom</span>
@@ -1200,8 +1406,8 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
       </section>
 
       {/* 8. FAQ ACCORDION (UDEMY ACCENT STYLE) */}
-      <section id="landing-faq" className="bg-[#f7f9fb] py-20 px-4 md:px-10 lg:px-20 border-t border-gray-100 text-left">
-        <div className="max-w-7xl mx-auto space-y-10">
+      <section id="landing-faq" className="bg-[#fcfdfe] py-24 px-4 md:px-10 lg:px-20 border-b border-gray-100/50 text-left">
+        <div className="max-w-7xl mx-auto space-y-12">
           <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900 text-center tracking-tight">
             {t.faqTitle}
           </h2>
@@ -1269,7 +1475,9 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 return (
                   <div
                     key={faq.id}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300"
+                    className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.01)] ${isOpen 
+                      ? 'border-[#1800ad]/20 shadow-[0_10px_30px_rgba(24,0,173,0.05)]' 
+                      : 'border-slate-100 hover:border-slate-300 hover:shadow-md'}`}
                   >
                     <button
                       onClick={() => setActiveFaq(isOpen ? null : faq.id)}
@@ -1289,7 +1497,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                         }`}
                     >
                       <div className="p-5 bg-slate-50/50">
-                        <p className="text-xs text-slate-600 pl-7 leading-relaxed font-semibold">
+                        <p className="text-xs text-slate-650 pl-7 leading-relaxed font-semibold">
                           {answer}
                         </p>
                       </div>
@@ -1300,7 +1508,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
             </div>
 
             {/* Right side: Interactive Help & Support Request Form */}
-            <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-5 text-left relative overflow-hidden self-stretch lg:self-start">
+            <div className="bg-white border border-slate-100 rounded-3xl p-6 md:p-8 shadow-[0_15px_40px_rgba(0,0,0,0.03)] space-y-6 text-left relative overflow-hidden self-stretch lg:self-start">
               <div className="absolute -right-8 -top-8 w-24 h-24 bg-[#1800ad]/5 rounded-full blur-xl"></div>
 
               <div className="flex items-center gap-3">
@@ -1317,7 +1525,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 </div>
               </div>
 
-              <p className="text-xs text-gray-500 font-medium leading-relaxed">
+              <p className="text-xs text-gray-505 font-medium leading-relaxed">
                 {selectedLanguage === 'id'
                   ? 'Ada kendala pendaftaran, pembayaran, atau kurikulum? Isi form di bawah untuk bantuan cepat.'
                   : 'Confused about sign ups, billing, or modular learning blocks? Complete the form below for instant support.'}
@@ -1325,26 +1533,45 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
 
               {/* Real Interactive Form Element */}
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  // 1. Deklarasikan dulu variabel formData dari target form yang sedang di-submit
-                  const formData = new FormData(e.currentTarget);
+                  const targetForm = e.currentTarget;
+                  const formData = new FormData(targetForm);
                   const email = formData.get('support_email') as string;
+                  const message = formData.get('support_message') as string;
 
-                  // 2. Set email ke state untuk ditampilkan di pesan sukses
-                  setSubmittedEmail(email);
-                  // Hidupkan notifikasi custom
-                  setShowSubmitSuccess(true);
+                  try {
+                    const response = await fetch('/api/auth/support', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ email, message })
+                    });
+                    
+                    if (!response.ok) {
+                      const errData = await response.json();
+                      throw new Error(errData.error || 'Gagal mengirim pesan.');
+                    }
 
-                  // Reset form setelah submit
-                  e.currentTarget.reset();
+                    // Set email ke state untuk ditampilkan di pesan sukses
+                    setSubmittedEmail(email);
+                    // Hidupkan notifikasi custom
+                    setShowSubmitSuccess(true);
 
-                  // Otomatis tutup notifikasi setelah 4 detik
-                  setTimeout(() => {
-                    setShowSubmitSuccess(false);
-                  }, 4000);
+                    // Reset form setelah submit
+                    targetForm.reset();
+
+                    // Otomatis tutup notifikasi setelah 4 detik
+                    setTimeout(() => {
+                      setShowSubmitSuccess(false);
+                    }, 4000);
+                  } catch (err: any) {
+                    console.error('Support submit error:', err);
+                    alert(err.message || 'Terjadi kesalahan saat mengirim formulir bantuan.');
+                  }
                 }}
-                className="space-y-3.5 pt-1"
+                className="space-y-4 pt-1"
               >
                 {/* Email Input Field */}
                 <div className="space-y-1.5">
@@ -1361,7 +1588,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       type="email"
                       required
                       placeholder="nama@sekolah.com"
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#1800ad]/20 focus:border-[#1800ad] focus:bg-white transition-all placeholder:text-gray-400"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-[#1800ad]/8 focus:border-[#1800ad] focus:bg-white transition-all placeholder:text-gray-400"
                     />
                   </div>
                 </div>
@@ -1378,7 +1605,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                       required
                       rows={3}
                       placeholder={selectedLanguage === 'id' ? 'Tuliskan kendala login, error coding sandbox, atau pertanyaan kurikulum kamu di sini...' : 'Type your login bugs, coding sandbox errors, or curriculum inquiries here...'}
-                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#1800ad]/20 focus:border-[#1800ad] focus:bg-white transition-all placeholder:text-gray-400 resize-none leading-relaxed"
+                      className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-[#1800ad]/8 focus:border-[#1800ad] focus:bg-white transition-all placeholder:text-gray-400 resize-none leading-relaxed"
                     />
                   </div>
                 </div>
@@ -1386,7 +1613,7 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
                 {/* Form Submit Action Button */}
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-[#1800ad] hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 group cursor-pointer transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md"
+                  className="w-full py-4 bg-[#1800ad] hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 group cursor-pointer transition-all duration-300 active:scale-[0.98] shadow-sm hover:shadow-[0_10px_20px_rgba(24,0,173,0.15)] border-none"
                 >
                   <span>{selectedLanguage === 'id' ? 'Tanya Tim JagoAI' : 'Contact Support'}</span>
                   <Symbol name="arrow_forward" className="text-sm group-hover:translate-x-0.5 transition-transform" />

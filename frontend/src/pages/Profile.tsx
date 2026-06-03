@@ -5,15 +5,21 @@ import { motion } from 'motion/react';
 export interface UserProfileData {
   id: number;
   email: string;
-  full_name: string;
+  full_name?: string;
+  fullName?: string;
   username: string;
   avatar_url?: string;
+  avatarUrl?: string;
   role: string;
   xp: number;
   level: number;
   bio?: string;
   website_url?: string;
+  websiteUrl?: string;
   linkedin_url?: string;
+  linkedinUrl?: string;
+  photo?: string;
+  name?: string;
   // Menjaga kecocokan visual dengan relasi database masa depan
   courses?: { title: string; progress: number }[];
   badges?: { name: string; icon: string; color: string }[];
@@ -39,9 +45,20 @@ export const Profile = ({ user, onBack }: ProfileProps) => {
     );
   }
 
+  // Safe extraction of user properties supporting camelCase, snake_case, and other shapes (from forum, leaderboard)
+  const fullName = user.full_name || user.fullName || (user as any).name || 'User';
+  const username = user.username || '';
+  const avatarUrl = user.avatar_url || user.avatarUrl || (user as any).photo || 'https://i.pravatar.cc/150';
+  const bio = user.bio || '';
+  const websiteUrl = user.website_url || user.websiteUrl || '';
+  const linkedinUrl = user.linkedin_url || user.linkedinUrl || '';
+  const level = user.level || 1;
+  const xp = user.xp || 0;
+  const role = user.role || 'LEARNER';
+
   // Hitung target XP berikutnya secara dinamis (Contoh rumus game standar: Level * 1000)
-  const nextLevelXp = user.level * 1000;
-  const currentLevelXpProgress = user.xp % 1000; // Sisa XP di level berjalan
+  const nextLevelXp = level * 1000;
+  const currentLevelXpProgress = xp % 1000; // Sisa XP di level berjalan
 
   // Fallback data pendukung jika di tabel database user tersebut belum punya tracks/badges
   const activeCourses = user.courses || [];
@@ -70,36 +87,36 @@ export const Profile = ({ user, onBack }: ProfileProps) => {
             <div className="relative inline-block">
               <div className="w-32 h-32 rounded-[40px] overflow-hidden shadow-inner bg-gray-50 ring-8 ring-[#f8f9fc]">
                 <img
-                  src={user.avatar_url || 'https://i.pravatar.cc/150'}
+                  src={avatarUrl}
                   className="w-full h-full object-cover"
-                  alt={user.full_name}
+                  alt={fullName}
                 />
               </div>
               <div className="absolute -bottom-2 -right-2 bg-[#e8ba00] text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg border-2 border-white">
-                Level {user.level}
+                Level {level}
               </div>
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-2xl font-display font-bold text-[#1800ad]">{user.full_name}</h2>
-              <p className="text-sm font-bold text-gray-400">@{user.username}</p>
+              <h2 className="text-2xl font-display font-bold text-[#1800ad]">{fullName}</h2>
+              <p className="text-sm font-bold text-gray-400">@{username}</p>
             </div>
 
             <p className="text-xs text-gray-500 leading-relaxed px-4">
-              {user.bio || 'No bio specified yet. Click Edit Profile to share your AI journey parameters.'}
+              {bio || 'No bio specified yet. Click Edit Profile to share your AI journey parameters.'}
             </p>
 
             <div className="pt-6 border-t border-gray-50 flex flex-col gap-3">
-              {user.website_url ? (
-                <a href={user.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-xs font-bold text-gray-600 hover:text-[#1800ad] transition-colors justify-center">
-                  <Symbol name="language" className="text-lg" /> {user.website_url.replace('https://', '').replace('http://', '')}
+              {websiteUrl ? (
+                <a href={websiteUrl} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-xs font-bold text-gray-600 hover:text-[#1800ad] transition-colors justify-center">
+                  <Symbol name="language" className="text-lg" /> {websiteUrl.replace('https://', '').replace('http://', '')}
                 </a>
               ) : (
                 <span className="text-gray-300 text-[11px] font-medium italic flex items-center gap-2 justify-center"><Symbol name="language" className="text-base" /> No website linked</span>
               )}
 
-              {user.linkedin_url ? (
-                <a href={user.linkedin_url.startsWith('http') ? user.linkedin_url : `https://${user.linkedin_url}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-xs font-bold text-gray-600 hover:text-[#1800ad] transition-colors justify-center">
+              {linkedinUrl ? (
+                <a href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-xs font-bold text-gray-600 hover:text-[#1800ad] transition-colors justify-center">
                   <Symbol name="link" className="text-lg" /> LinkedIn Profile
                 </a>
               ) : (
@@ -113,12 +130,12 @@ export const Profile = ({ user, onBack }: ProfileProps) => {
             <Symbol name="stars" className="absolute -right-8 -bottom-8 text-[160px] opacity-10 group-hover:scale-110 transition-transform" />
             <div className="space-y-2 relative z-10">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Quest Performance</p>
-              <h3 className="text-3xl font-display font-bold">{user.xp.toLocaleString()} XP</h3>
+              <h3 className="text-3xl font-display font-bold">{xp.toLocaleString()} XP</h3>
             </div>
 
             <div className="space-y-3 relative z-10">
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                <span>{user.role} Track</span>
+                <span>{role} Track</span>
                 <span>{nextLevelXp.toLocaleString()} XP</span>
               </div>
               <div className="h-3 bg-white/10 rounded-full overflow-hidden">
@@ -128,7 +145,7 @@ export const Profile = ({ user, onBack }: ProfileProps) => {
                   className="h-full bg-[#e8ba00]"
                 ></motion.div>
               </div>
-              <p className="text-[9px] font-medium opacity-60 italic text-right">Collect {(1000 - currentLevelXpProgress).toLocaleString()} more XP to reach Level {user.level + 1}</p>
+              <p className="text-[9px] font-medium opacity-60 italic text-right">Collect {(1000 - currentLevelXpProgress).toLocaleString()} more XP to reach Level {level + 1}</p>
             </div>
           </div>
         </div>

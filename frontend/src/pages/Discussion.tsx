@@ -10,6 +10,7 @@ interface ChatReaction {
 
 interface ChatMessage {
   id: number;
+  userId?: number;
   user: string;
   avatar: string;
   role: 'LEARNER' | 'TENTOR';
@@ -19,6 +20,7 @@ interface ChatMessage {
   reactions?: ChatReaction[];
   imageAttachment?: string;
   fileAttachment?: string;
+  fileAttachmentUrl?: string;
 }
 
 interface Category {
@@ -40,7 +42,7 @@ interface Thread {
   tags: string[];
 }
 
-export const Discussion = ({ onViewProfile, language }: { onViewProfile: (user: any) => void; language: 'id' | 'en' }) => {
+export const Discussion = ({ currentUser, onViewProfile, language }: { currentUser?: any; onViewProfile: (user: any) => void; language: 'id' | 'en' }) => {
   const [view, setView] = useState<'hub' | 'chat'>('hub');
   const [categories, setCategories] = useState<Category[]>([]);
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -485,8 +487,8 @@ export const Discussion = ({ onViewProfile, language }: { onViewProfile: (user: 
             </div>
           ) : messages.length > 0 ? (
             messages.map((msg) => {
-              // Standard check: is it current user?
-              const isMe = msg.user === "Ahmad Syarif" || msg.user === "Alex (You)";
+              // Dynamic check using userId, fall back to author name string matching for safety
+              const isMe = msg.userId === currentUser?.id || msg.user === "Alex (You)";
               return (
                 <div key={msg.id} className={`flex gap-6 ${isMe ? 'flex-row-reverse' : ''}`}>
                   <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm shrink-0">
@@ -526,10 +528,20 @@ export const Discussion = ({ onViewProfile, language }: { onViewProfile: (user: 
                       )}
 
                       {msg.fileAttachment && (
-                        <div className="mt-3 flex items-center gap-3 p-3 rounded-2xl text-xs max-w-sm border bg-slate-50 border-slate-150 text-slate-800">
+                        <a 
+                          href={msg.fileAttachmentUrl || '#'} 
+                          download={msg.fileAttachment}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="mt-3 flex items-center gap-3 p-3 rounded-2xl text-xs max-w-sm border bg-slate-50 border-slate-150 text-slate-800 hover:bg-slate-100 transition-all cursor-pointer block no-underline"
+                        >
                           <Symbol name="description" className="text-2xl shrink-0 text-[#1800ad]" />
-                          <span className="font-bold flex-1 truncate">{msg.fileAttachment}</span>
-                        </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold truncate text-slate-800">{msg.fileAttachment}</div>
+                            <div className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Klik untuk Mengunduh</div>
+                          </div>
+                          <Symbol name="download" className="text-lg text-slate-400" />
+                        </a>
                       )}
                     </div>
 

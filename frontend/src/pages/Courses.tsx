@@ -16,7 +16,7 @@ interface Course {
   module_count: number;
 }
 
-export const Courses = ({ onSelectCourse }: { onSelectCourse: (id: number) => void }) => {
+export const Courses = ({ currentUser, onSelectCourse }: { currentUser: any; onSelectCourse: (id: number) => void }) => {
   const [activeTab, setActiveTab] = useState<'All' | 'Beginner' | 'Intermediate' | 'Advanced' | 'UTBK Prep'>('All');
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -56,6 +56,100 @@ export const Courses = ({ onSelectCourse }: { onSelectCourse: (id: number) => vo
       prev.includes(category) 
         ? prev.filter(c => c !== category) 
         : [...prev, category]
+    );
+  };
+
+  const enrolledCourseIds = currentUser?.courses?.map((c: any) => c.id) || [];
+  const enrolledCourses = filteredCourses.filter(c => enrolledCourseIds.includes(c.id));
+  const availableCourses = filteredCourses.filter(c => !enrolledCourseIds.includes(c.id));
+
+  const getCourseProgress = (courseId: number) => {
+    return currentUser?.courses?.find((c: any) => c.id === courseId)?.progress || 0;
+  };
+
+  const renderCourseCard = (course: Course, isEnrolled: boolean) => {
+    const progress = getCourseProgress(course.id);
+    return (
+      <motion.div 
+        layout
+        key={course.id} 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="group relative bg-white rounded-2xl md:rounded-[48px] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col h-full"
+      >
+        {/* Top Image */}
+        <div className="relative aspect-[4/5] md:aspect-video overflow-hidden">
+          <img 
+            src={course.image_url} 
+            alt={course.title} 
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
+          />
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+          <div className="absolute top-3 left-3 md:top-6 md:left-6">
+            <span className="px-2 md:px-5 py-1 md:py-2 bg-[#e8ba00] text-[#1800ad] text-[7px] md:text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">
+              {course.badge}
+            </span>
+          </div>
+          <div className="absolute top-3 right-3 md:top-6 md:right-6">
+             <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/30 transition-colors">
+                <Symbol name={
+                  course.category === 'Vision' ? 'visibility' : 
+                  course.category === 'NLP' ? 'translate' : 
+                  course.category === 'Robotics' ? 'precision_manufacturing' : 
+                  course.category === 'UTBK Prep' ? 'school' : 
+                  course.category === 'Mathematics' ? 'calculate' : 
+                  course.category === 'Generative AI' ? 'auto_awesome' : 
+                  'auto_stories'
+                } className="text-sm md:text-xl" />
+             </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-3 md:p-10 flex-1 flex flex-col">
+          <div className="mb-2 md:mb-4">
+             <span className="text-[7px] md:text-[10px] font-black text-[#1800ad]/40 uppercase tracking-[0.2em] transition-colors">{course.category}</span>
+          </div>
+          <h3 className="text-[11px] md:text-2xl font-display font-bold text-[#1800ad] mb-4 md:mb-8 leading-tight group-hover:text-[#e8ba00] transition-colors line-clamp-2">{course.title}</h3>
+          
+          <div className="grid grid-cols-2 gap-y-3 md:gap-y-6 gap-x-2 md:gap-x-4 mb-4 md:mb-10">
+            <div className="flex items-center gap-1.5 md:gap-3 text-gray-500">
+              <Symbol name="schedule" className="text-[#e8ba00] text-[10px] md:text-lg" />
+              <span className="text-[8px] md:text-[10px] font-bold">{course.duration_hours}h</span>
+            </div>
+            <div className="flex items-center gap-1.5 md:gap-3 text-gray-500">
+              <Symbol name="star" className="text-[#e8ba00] text-[10px] md:text-lg" />
+              <span className="text-[8px] md:text-[10px] font-bold">{course.rating}</span>
+            </div>
+          </div>
+
+          {/* Progress Bar for Enrolled Courses */}
+          {isEnrolled && (
+            <div className="space-y-2 mb-6 md:mb-8">
+              <div className="flex justify-between items-center text-[8px] md:text-[10px] font-black uppercase tracking-wider text-gray-400">
+                <span>Progress Belajar</span>
+                <span className="text-[#1800ad]">{progress}%</span>
+              </div>
+              <div className="w-full h-1.5 md:h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-[#1800ad] rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
+
+          <button 
+            onClick={() => onSelectCourse(course.id)}
+            className={`mt-auto w-full py-3 md:py-5 rounded-xl md:rounded-3xl flex items-center justify-center gap-2 md:gap-3 text-[8px] md:text-[11px] font-black uppercase tracking-widest group/btn overflow-hidden relative shadow-lg transition-all active:scale-95 ${
+              isEnrolled 
+                ? 'bg-white border border-[#1800ad] text-[#1800ad] hover:bg-[#1800ad] hover:text-white shadow-[#1800ad]/5' 
+                : 'bg-[#1800ad] text-white shadow-[#1800ad]/20'
+            }`}
+          >
+            <span className="relative z-10">{isEnrolled ? 'Lanjutkan Belajar' : 'Join'}</span>
+            <Symbol name={isEnrolled ? 'play_circle' : 'arrow_forward'} className="text-xs md:text-lg relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+            <div className="absolute inset-0 bg-[#1800ad] translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
+          </button>
+        </div>
+      </motion.div>
     );
   };
 
@@ -139,74 +233,33 @@ export const Courses = ({ onSelectCourse }: { onSelectCourse: (id: number) => vo
           <Symbol name="error" className="text-5xl text-red-500" />
           <p className="text-red-500 font-medium">{error}</p>
         </div>
-      ) : filteredCourses.length > 0 ? (
-
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-10">
-          {filteredCourses.map((course) => (
-            <motion.div 
-              layout
-              key={course.id} 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="group relative bg-white rounded-2xl md:rounded-[48px] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col h-full"
-            >
-              {/* Top Image */}
-              <div className="relative aspect-[4/5] md:aspect-video overflow-hidden">
-                <img 
-                  src={course.image_url} 
-                  alt={course.title} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" 
-                />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
-                <div className="absolute top-3 left-3 md:top-6 md:left-6">
-                  <span className="px-2 md:px-5 py-1 md:py-2 bg-[#e8ba00] text-[#1800ad] text-[7px] md:text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">
-                    {course.badge}
-                  </span>
-                </div>
-                <div className="absolute top-3 right-3 md:top-6 md:right-6">
-                   <div className="w-8 h-8 md:w-10 md:h-10 bg-white/20 backdrop-blur-md rounded-lg md:rounded-xl flex items-center justify-center text-white border border-white/30 transition-colors">
-                      <Symbol name={
-                        course.category === 'Vision' ? 'visibility' : 
-                        course.category === 'NLP' ? 'translate' : 
-                        course.category === 'Robotics' ? 'precision_manufacturing' : 
-                        course.category === 'UTBK Prep' ? 'school' : 
-                        course.category === 'Mathematics' ? 'calculate' : 
-                        course.category === 'Generative AI' ? 'auto_awesome' : 
-                        'auto_stories'
-                      } className="text-sm md:text-xl" />
-                   </div>
-                </div>
+      ) : (enrolledCourses.length > 0 || availableCourses.length > 0) ? (
+        <div className="space-y-16">
+          {/* ENROLLED COURSES SECTION */}
+          {enrolledCourses.length > 0 && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <Symbol name="menu_book" className="text-[#e8ba00] text-2xl" />
+                <h2 className="text-xl md:text-2xl font-display font-bold text-[#1800ad]">Kursus yang Sedang Diambil</h2>
               </div>
-
-              {/* Content */}
-              <div className="p-3 md:p-10 flex-1 flex flex-col">
-                <div className="mb-2 md:mb-4">
-                   <span className="text-[7px] md:text-[10px] font-black text-[#1800ad]/40 uppercase tracking-[0.2em] transition-colors">{course.category}</span>
-                </div>
-                <h3 className="text-[11px] md:text-2xl font-display font-bold text-[#1800ad] mb-4 md:mb-8 leading-tight group-hover:text-[#e8ba00] transition-colors line-clamp-2">{course.title}</h3>
-                
-                <div className="grid grid-cols-2 gap-y-3 md:gap-y-6 gap-x-2 md:gap-x-4 mb-4 md:mb-10">
-                  <div className="flex items-center gap-1.5 md:gap-3 text-gray-500">
-                    <Symbol name="schedule" className="text-[#e8ba00] text-[10px] md:text-lg" />
-                    <span className="text-[8px] md:text-[10px] font-bold">{course.duration_hours}h</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 md:gap-3 text-gray-500">
-                    <Symbol name="star" className="text-[#e8ba00] text-[10px] md:text-lg" />
-                    <span className="text-[8px] md:text-[10px] font-bold">{course.rating}</span>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => onSelectCourse(course.id)}
-                  className="mt-auto w-full py-3 md:py-5 bg-[#1800ad] text-white rounded-xl md:rounded-3xl flex items-center justify-center gap-2 md:gap-3 text-[8px] md:text-[11px] font-black uppercase tracking-widest group/btn overflow-hidden relative shadow-lg shadow-[#1800ad]/20 transition-all active:scale-95"
-                >
-                  <span className="relative z-10">Join</span>
-                  <Symbol name="arrow_forward" className="text-xs md:text-lg relative z-10 group-hover/btn:translate-x-2 transition-transform" />
-                  <div className="absolute inset-0 bg-black translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
-                </button>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-10">
+                {enrolledCourses.map((course) => renderCourseCard(course, true))}
               </div>
-            </motion.div>
-          ))}
+            </div>
+          )}
+
+          {/* AVAILABLE COURSES SECTION */}
+          {availableCourses.length > 0 && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <Symbol name="explore" className="text-[#e8ba00] text-2xl" />
+                <h2 className="text-xl md:text-2xl font-display font-bold text-[#1800ad]">Kursus yang Tersedia</h2>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-10">
+                {availableCourses.map((course) => renderCourseCard(course, false))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="py-40 flex flex-col items-center justify-center text-center space-y-6">

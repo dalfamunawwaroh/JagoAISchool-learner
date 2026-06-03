@@ -129,11 +129,16 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
                 onViewCourses={() => setActiveTab('Courses')}
               />
             )}
-            {activeTab === 'Courses' && <Courses onSelectCourse={(courseId) => { setSelectedCourseId(courseId); setActiveTab('CourseDetail'); }} />}
+            {activeTab === 'Courses' && (
+              <Courses 
+                currentUser={currentUser}
+                onSelectCourse={(courseId) => { setSelectedCourseId(courseId); setActiveTab('CourseDetail'); }} 
+              />
+            )}
             {activeTab === 'AI Toolkit' && <AIToolkit onSelectTool={handleSelectTool} />}
             {activeTab === 'Article' && <Article onReadMore={handleReadArticle} />}
             {activeTab === 'Events' && <Events />}
-            {activeTab === 'Discussion' && <Discussion onViewProfile={handleViewProfile} language={language} />}
+            {activeTab === 'Discussion' && <Discussion currentUser={currentUser} onViewProfile={handleViewProfile} language={language} />}
             {activeTab === 'Consultation Service' && <Consultation language={language} />}
             {activeTab === 'CourseDetail' && selectedCourseId !== null && (
               <CourseDetail

@@ -74,6 +74,14 @@ export const authService = {
       body: JSON.stringify(data)
     });
   },
+  getSessions: async () => {
+    return apiCall('/api/auth/settings/sessions');
+  },
+  revokeSession: async (id: number) => {
+    return apiCall(`/api/auth/settings/sessions/${id}`, {
+      method: 'DELETE'
+    });
+  },
   forgotPassword: async (email: string) => {
     return apiCall('/api/auth/forgot-password', {
       method: 'POST',
