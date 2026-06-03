@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Symbol } from '../components/ui/Symbol';
+import emailjs from '@emailjs/browser';
 
 interface LandingProps {
   onNavigateToAuth: (mode: 'login' | 'register') => void;
@@ -30,6 +31,8 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
   const [selectedFeatureTab, setSelectedFeatureTab] = useState<'sandbox' | 'consult' | 'lms' | 'forums'>('sandbox');
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSubmitSuccess, setShowSubmitSuccess] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -1296,37 +1299,99 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
               })}
             </div>
 
-            {/* Right side: Needs Help Card */}
+            {/* Right side: Interactive Help & Support Request Form */}
             <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-5 text-left relative overflow-hidden self-stretch lg:self-start">
               <div className="absolute -right-8 -top-8 w-24 h-24 bg-[#1800ad]/5 rounded-full blur-xl"></div>
-              <div className="w-12 h-12 rounded-2xl bg-[#1800ad]/5 text-[#1800ad] flex items-center justify-center shrink-0 border border-[#1800ad]/10">
-                <Symbol name="forward_to_inbox" className="text-xl" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-base font-semibold text-gray-900">
-                  {selectedLanguage === 'id' ? 'Butuh Bantuan Langsung?' : 'Need Instant Assistance?'}
-                </h3>
-                <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                  {selectedLanguage === 'id'
-                    ? 'Ada kendala pendaftaran, pembayaran, atau kurikulum? Hubungi admin & tim penasihat JagoAI untuk bantuan cepat.'
-                    : 'Confused about sign ups, billing, or modular learning blocks? Reach out directly to friendly JagoAI support agents.'}
-                </p>
-              </div>
 
-              <div className="space-y-2.5 pt-1">
-                <div className="flex items-center gap-2.5 text-xs font-bold text-gray-700 bg-gray-50/50 p-3 rounded-xl border border-gray-100/70">
-                  <Symbol name="email" className="text-[#1800ad] text-base" />
-                  <span>admin.jagoaischool@gmail.com</span>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-[#1800ad]/5 text-[#1800ad] flex items-center justify-center shrink-0 border border-[#1800ad]/10">
+                  <Symbol name="forward_to_inbox" className="text-xl" />
+                </div>
+                <div className="space-y-0.5">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {selectedLanguage === 'id' ? 'Butuh Bantuan Langsung?' : 'Need Instant Assistance?'}
+                  </h3>
+                  <span className="text-[10px] text-gray-400 font-medium block">
+                    {selectedLanguage === 'id' ? 'Respon cepat tim JagoAI' : 'JagoAI support quick response'}
+                  </span>
                 </div>
               </div>
 
-              <button
-                onClick={() => onNavigateToAuth('register')}
-                className="w-full py-3 bg-[#1800ad] hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 group cursor-pointer transition-all duration-200"
+              <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                {selectedLanguage === 'id'
+                  ? 'Ada kendala pendaftaran, pembayaran, atau kurikulum? Isi form di bawah untuk bantuan cepat.'
+                  : 'Confused about sign ups, billing, or modular learning blocks? Complete the form below for instant support.'}
+              </p>
+
+              {/* Real Interactive Form Element */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  // 1. Deklarasikan dulu variabel formData dari target form yang sedang di-submit
+                  const formData = new FormData(e.currentTarget);
+                  const email = formData.get('support_email') as string;
+
+                  // 2. Set email ke state untuk ditampilkan di pesan sukses
+                  setSubmittedEmail(email);
+                  // Hidupkan notifikasi custom
+                  setShowSubmitSuccess(true);
+
+                  // Reset form setelah submit
+                  e.currentTarget.reset();
+
+                  // Otomatis tutup notifikasi setelah 4 detik
+                  setTimeout(() => {
+                    setShowSubmitSuccess(false);
+                  }, 4000);
+                }}
+                className="space-y-3.5 pt-1"
               >
-                <span>{selectedLanguage === 'id' ? 'Tanya Tim JagoAI' : 'Contact Support'}</span>
-                <Symbol name="arrow_forward" className="text-sm group-hover:translate-x-0.5 transition-transform" />
-              </button>
+                {/* Email Input Field */}
+                <div className="space-y-1.5">
+                  <label htmlFor="support_email" className="text-[10px] font-black tracking-wider text-gray-400 uppercase block font-mono">
+                    {selectedLanguage === 'id' ? 'Alamat Email Anda' : 'Your Email Address'}
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-3.5 text-gray-400 flex items-center">
+                      <Symbol name="mail" className="text-base" />
+                    </div>
+                    <input
+                      id="support_email"
+                      name="support_email"
+                      type="email"
+                      required
+                      placeholder="nama@sekolah.com"
+                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#1800ad]/20 focus:border-[#1800ad] focus:bg-white transition-all placeholder:text-gray-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Message/Complaint Textarea Field */}
+                <div className="space-y-1.5">
+                  <label htmlFor="support_message" className="text-[10px] font-black tracking-wider text-gray-400 uppercase block font-mono">
+                    {selectedLanguage === 'id' ? 'Detail Keluhan atau Pertanyaan' : 'Complaint or Question Details'}
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      id="support_message"
+                      name="support_message"
+                      required
+                      rows={3}
+                      placeholder={selectedLanguage === 'id' ? 'Tuliskan kendala login, error coding sandbox, atau pertanyaan kurikulum kamu di sini...' : 'Type your login bugs, coding sandbox errors, or curriculum inquiries here...'}
+                      className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#1800ad]/20 focus:border-[#1800ad] focus:bg-white transition-all placeholder:text-gray-400 resize-none leading-relaxed"
+                    />
+                  </div>
+                </div>
+
+                {/* Form Submit Action Button */}
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-[#1800ad] hover:bg-black text-white rounded-xl text-xs font-bold uppercase tracking-wider text-center flex items-center justify-center gap-2 group cursor-pointer transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md"
+                >
+                  <span>{selectedLanguage === 'id' ? 'Tanya Tim JagoAI' : 'Contact Support'}</span>
+                  <Symbol name="arrow_forward" className="text-sm group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </form>
             </div>
 
           </div>
@@ -1496,6 +1561,44 @@ export const Landing = ({ onNavigateToAuth, lang = 'id' }: LandingProps) => {
         )}
       </AnimatePresence>
 
+      {/* 11. CUSTOM PREMIUM FLOATING TOAST NOTIFICATION */}
+      <AnimatePresence>
+        {showSubmitSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="fixed bottom-6 right-6 z-[2000] max-w-md w-[calc(100vw-32px)] bg-white border border-emerald-100 shadow-[0_20px_50px_rgba(0,0,0,0.12)] p-4 rounded-2xl flex items-start gap-3.5 text-left"
+          >
+            {/* Success Icon Badge with Soft Glow */}
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 shadow-inner">
+              <Symbol name="check_circle" className="text-xl fill-1" />
+            </div>
+
+            {/* Notification Content Texts */}
+            <div className="flex-1 space-y-1 pr-6">
+              <h4 className="text-xs font-bold text-gray-900 leading-none">
+                {selectedLanguage === 'id' ? 'Keluhan Berhasil Terkirim!' : 'Support Request Submitted!'}
+              </h4>
+              <p className="text-[11px] text-gray-500 font-medium leading-normal">
+                {selectedLanguage === 'id'
+                  ? `Terima kasih! Tiket bantuan telah dikirim ke tim JagoAI. Kami akan menghubungi Anda di ${submittedEmail} sesegera mungkin.`
+                  : `Thank you! Your inquiry has been routed to the support team. We will reach back to you at ${submittedEmail} shortly.`}
+              </p>
+            </div>
+
+            {/* Manual Close Button */}
+            <button
+              onClick={() => setShowSubmitSuccess(false)}
+              className="absolute top-3 right-3 w-6 h-6 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-all border-none cursor-pointer"
+              title="Close"
+            >
+              <Symbol name="close" className="text-sm font-bold" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

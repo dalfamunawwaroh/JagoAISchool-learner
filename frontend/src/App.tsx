@@ -60,27 +60,27 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
 
   return (
     <div className="flex h-screen overflow-hidden font-sans selection:bg-[#e8ba00] selection:text-black bg-white text-gray-900">
-      
+
       {/* FLOATING AI CHAT */}
       <FloatingAIChat />
 
       {/* FIXED LEFT SIDEBAR */}
-      <Sidebar 
+      <Sidebar
         activeTab={
           ['CourseDetail', 'CoursePlayer', 'CourseEnroll'].includes(activeTab)
-            ? 'Courses' 
-            : activeTab === 'ToolDetail' 
-              ? 'AI Toolkit' 
+            ? 'Courses'
+            : activeTab === 'ToolDetail'
+              ? 'AI Toolkit'
               : activeTab === 'ArticleDetail'
                 ? 'Article'
-                : activeTab === 'Notifications'
-                  ? 'Home'
+                : ['Notifications', 'EditProfile', 'Settings'].includes(activeTab)
+                  ? 'Home' // Atau biarkan kosong jika halaman ini punya menu sendiri
                   : activeTab
-        } 
+        }
         setActiveTab={(tab) => {
           setActiveTab(tab);
           setIsMobileMenuOpen(false);
-        }} 
+        }}
         isProfileMenuOpen={isProfileMenuOpen}
         setIsProfileMenuOpen={setIsProfileMenuOpen}
         onLogout={onLogout}
@@ -94,9 +94,9 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
 
       <main className={`transition-all duration-300 ${isCollapsed ? 'lg:ml-[100px]' : 'lg:ml-[280px]'} ml-0 flex-1 h-screen flex flex-col relative overflow-hidden bg-[#f7f9fb]`}>
         {/* Background Dot Grid & Soft Ambient Glowing Gradient Auras */}
-        <div 
+        <div
           className="absolute inset-0 pointer-events-none z-0 opacity-80"
-          style={{ 
+          style={{
             backgroundImage: `radial-gradient(#cbd5e1 1.2px, transparent 1.2px)`,
             backgroundSize: '32px 32px',
           }}
@@ -104,14 +104,14 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
         <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#1800ad]/3 blur-[150px] rounded-full pointer-events-none select-none z-0"></div>
         <div className="absolute bottom-[-10%] left-[-10%] w-[700px] h-[700px] bg-[#e8ba00]/3 blur-[180px] rounded-full pointer-events-none select-none z-0"></div>
 
-        <Header 
+        <Header
           onToggleSidebar={() => {
             if (window.innerWidth < 1024) {
               setIsMobileMenuOpen(!isMobileMenuOpen);
             } else {
               setIsCollapsed(!isCollapsed);
             }
-          }} 
+          }}
           language={language}
           onViewNotifications={() => setActiveTab('Notifications')}
         />
@@ -119,11 +119,11 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
         <div className="p-4 md:p-8 lg:p-12 flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-10">
           <div className="max-w-7xl mx-auto">
             {activeTab === 'Home' && (
-              <Dashboard 
+              <Dashboard
                 currentUser={currentUser}
-                onResumeLearning={(courseId) => { setSelectedCourseId(courseId); setActiveTab('CourseDetail'); }} 
-                onViewProfile={handleViewProfile} 
-                language={language} 
+                onResumeLearning={(courseId) => { setSelectedCourseId(courseId); setActiveTab('CourseDetail'); }}
+                onViewProfile={handleViewProfile}
+                language={language}
                 onReadArticle={handleReadArticle}
                 onViewEvents={() => setActiveTab('Events')}
                 onViewCourses={() => setActiveTab('Courses')}
@@ -136,31 +136,47 @@ const DashboardView = ({ currentUser, setCurrentUser, onLogout, language, setLan
             {activeTab === 'Discussion' && <Discussion onViewProfile={handleViewProfile} language={language} />}
             {activeTab === 'Consultation Service' && <Consultation language={language} />}
             {activeTab === 'CourseDetail' && selectedCourseId !== null && (
-              <CourseDetail 
+              <CourseDetail
                 courseId={selectedCourseId}
-                onStartLearning={() => setActiveTab('CoursePlayer')} 
+                onStartLearning={() => setActiveTab('CoursePlayer')}
                 onEnroll={() => setActiveTab('CourseEnroll')}
                 onBack={() => setActiveTab('Courses')}
               />
             )}
             {activeTab === 'CoursePlayer' && selectedCourseId !== null && (
-              <CoursePlayer 
+              <CoursePlayer
                 courseId={selectedCourseId}
-                onBack={() => setActiveTab('CourseDetail')} 
+                onBack={() => setActiveTab('CourseDetail')}
               />
             )}
             {activeTab === 'ToolDetail' && selectedTool && <ToolDetail tool={selectedTool} onBack={() => setActiveTab('AI Toolkit')} />}
             {activeTab === 'ArticleDetail' && selectedArticle && <ArticleDetail article={selectedArticle} onBack={() => setActiveTab('Article')} />}
             {activeTab === 'CourseEnroll' && selectedCourseId !== null && (
-              <CourseEnroll 
+              <CourseEnroll
                 courseId={selectedCourseId}
-                onCancel={() => setActiveTab('Courses')} 
-                onEnrollSuccess={() => setActiveTab('CourseDetail')} 
+                onCancel={() => setActiveTab('Courses')}
+                onEnrollSuccess={() => setActiveTab('CourseDetail')}
               />
             )}
             {activeTab === 'EditProfile' && <EditProfile currentUser={currentUser} setCurrentUser={setCurrentUser} />}
             {activeTab === 'Settings' && <Settings language={language} setLanguage={setLanguage} currentUser={currentUser} setCurrentUser={setCurrentUser} />}
-            {activeTab === 'Profile' && <Profile user={selectedProfile} onBack={() => setActiveTab('Discussion')} />}
+            {activeTab === 'Profile' && (
+              <Profile
+                // JIKA selectedProfile ada (klik orang lain di forum), tampilkan orang itu.
+                // JIKA kosong (klik tombol profil sendiri), otomatis pakai currentUser kamu!
+                user={selectedProfile || currentUser}
+                onBack={() => {
+                  // Jika yang dilihat profil diri sendiri, kembalikan ke Home/Dashboard
+                  if (!selectedProfile || selectedProfile.id === currentUser?.id) {
+                    setActiveTab('Home');
+                  } else {
+                    setActiveTab('Discussion');
+                  }
+                  // Reset state pilihan profil saat kembali agar tidak saling bertabrakan
+                  setSelectedProfile(null);
+                }}
+              />
+            )}
             {activeTab === 'Notifications' && <Notifications language={language} />}
           </div>
         </div>
@@ -176,7 +192,7 @@ export default function App() {
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register' | 'forgot' | 'reset'>('login');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  
+
   const [language, setLanguage] = useState<'id' | 'en'>(() => {
     const stored = localStorage.getItem('jagoai_language');
     return (stored === 'en' || stored === 'id') ? stored : 'id';
@@ -189,7 +205,7 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       const mode = params.get('mode');
       const token = params.get('token');
-      
+
       if (mode === 'reset' && token) {
         setAuthInitialMode('reset');
         setView('auth');
@@ -242,32 +258,32 @@ export default function App() {
 
   if (view === 'landing') {
     return (
-      <Landing 
+      <Landing
         onNavigateToAuth={(mode) => {
           setAuthInitialMode(mode);
           setView('auth');
-        }} 
+        }}
       />
     );
   }
 
   if (view === 'auth') {
     return (
-      <Auth 
+      <Auth
         initialMode={authInitialMode}
-        onLogin={handleLoginSuccess} 
+        onLogin={handleLoginSuccess}
         onBackToLanding={() => setView('landing')}
       />
     );
   }
 
   return (
-    <DashboardView 
-      currentUser={currentUser} 
-      setCurrentUser={setCurrentUser} 
-      onLogout={handleLogout} 
-      language={language} 
-      setLanguage={handleSetLanguage} 
+    <DashboardView
+      currentUser={currentUser}
+      setCurrentUser={setCurrentUser}
+      onLogout={handleLogout}
+      language={language}
+      setLanguage={handleSetLanguage}
     />
   );
 }
